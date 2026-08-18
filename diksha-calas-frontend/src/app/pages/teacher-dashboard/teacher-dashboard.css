@@ -1,0 +1,1118 @@
+/* =========================================================
+   TEACHER DASHBOARD
+========================================================= */
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #1e293b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.dashboard {
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+main {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 30px;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.dashboard-header-card {
+  width: 100%;
+  max-width: none;
+  margin: 0 0 24px 0;
+  padding: 20px 40px;
+  background: #ffffff;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0;
+  box-shadow: none;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-top-row h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #0f172a;
+}
+
+.header-top-row p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.header-divider {
+  border: 0;
+  border-top: 1px solid #f1f5f9;
+  margin: 20px 0;
+}
+
+.header-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+
+.logout-btn {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+
+  padding: 10px 18px;
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  white-space: nowrap;
+
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+  transform: translateY(-1px);
+  box-shadow: 0 7px 18px rgba(239, 68, 68, 0.2);
+}
+
+/* =========================================================
+   LOADING / ALERT
+========================================================= */
+
+.message,
+.alert {
+  max-width: 1250px;
+  margin: 25px auto;
+  padding: 15px 20px;
+
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+}
+
+.message {
+  color: #475569;
+}
+
+.alert.error {
+  color: #b42318;
+  background: #fff7f7;
+  border-color: #fecaca;
+}
+
+.alert.success {
+  color: #087443;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+/* =========================================================
+   STUDENT SELECTOR (Moved inside Header)
+========================================================= */
+
+.header-bottom-row label {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.selector-hint {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-radius: 8px;
+
+  color: #64748b;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.header-bottom-row select {
+  min-width: 300px;
+
+  padding: 11px 14px;
+
+  border: 1px solid #d8dee9;
+  border-radius: 9px;
+
+  background: white;
+  color: #1e293b;
+
+  font-size: 14px;
+  outline: none;
+
+  cursor: pointer;
+
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.header-bottom-row select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* =========================================================
+   STUDENT HEADER
+========================================================= */
+
+.student-header {
+  max-width: 1250px;
+  margin: 0 auto;
+
+  background: linear-gradient(135deg, #ffffff 0%, #fcfdff 100%);
+  padding: 28px 32px;
+
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 20px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), 0 1px 4px rgba(0,0,0,0.02);
+}
+
+.student-header h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 25px;
+}
+
+.student-header p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.daily-hours {
+  min-width: 100px;
+  text-align: center;
+
+  font-size: 30px;
+  font-weight: 800;
+  color: #4f46e5;
+}
+
+.daily-hours span {
+  display: block;
+
+  margin-top: 3px;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  color: #64748b;
+}
+
+/* =========================================================
+   PROGRESS SUMMARY
+========================================================= */
+
+.progress-summary {
+  max-width: 1250px;
+  margin: 22px auto;
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.progress-summary > div {
+  background: #ffffff;
+  padding: 24px 28px;
+
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 20px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), 0 1px 4px rgba(0,0,0,0.02);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.progress-summary > div:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0,0,0,0.02);
+}
+
+.progress-summary strong {
+  font-size: 25px;
+  color: #1e293b;
+}
+
+.progress-summary span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* =========================================================
+   SCHEDULE SECTION
+========================================================= */
+
+.schedule-section {
+  max-width: 1250px;
+  margin: 30px auto 50px;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 18px;
+}
+
+.section-title h2 {
+  margin: 0;
+
+  color: #172033;
+  font-size: 22px;
+}
+
+.section-title p {
+  margin: 6px 0 0;
+
+  color: #64748b;
+  font-size: 13px;
+}
+
+.count {
+  background: #eef2ff;
+  color: #4f46e5;
+
+  padding: 8px 14px;
+
+  border-radius: 20px;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   SCHEDULE CARD
+========================================================= */
+
+.schedule-item {
+  background: #ffffff;
+  margin-bottom: 14px;
+  padding: 20px 24px;
+
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 16px;
+
+  display: grid;
+  grid-template-columns: 120px minmax(250px, 1fr) 70px 145px 75px;
+  gap: 20px;
+  align-items: center;
+
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0,0,0,0.02);
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.schedule-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0,0,0,0.02);
+}
+
+/* =========================================================
+   DATE
+========================================================= */
+
+.date-box {
+  padding-right: 15px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.date-box strong {
+  display: block;
+
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.date-box small {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* =========================================================
+   SCHEDULE CONTENT
+========================================================= */
+
+.subject {
+  margin-bottom: 5px;
+
+  color: #4f46e5;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.schedule-content h3 {
+  margin: 0 0 7px;
+
+  color: #172033;
+  font-size: 17px;
+}
+
+.schedule-content p {
+  margin: 5px 0;
+
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* =========================================================
+   HOURS
+========================================================= */
+
+.hours {
+  color: #172033;
+
+  font-size: 18px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   STATUS BADGE
+========================================================= */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  background: #f1f5f9;
+  color: #475569;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.badge.manual {
+  background: #fff4cc;
+  color: #92400e;
+}
+
+/* =========================================================
+   EDIT BUTTON
+========================================================= */
+
+.edit-btn {
+  border: 0;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: #2563eb;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   MODAL OVERLAY
+========================================================= */
+
+.modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: rgba(15, 23, 42, 0.62);
+
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+
+  z-index: 999;
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal {
+  position: fixed;
+
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: min(760px, calc(100% - 30px));
+  max-height: calc(100vh - 40px);
+
+  background: #ffffff;
+  border-radius: 24px;
+  
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15), 0 8px 25px rgba(0, 0, 0, 0.1);
+
+  z-index: 1000;
+
+  animation: modalIn 0.2s ease-out;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* =========================================================
+   MODAL HEADER
+========================================================= */
+
+.modal-header {
+  padding: 20px 25px;
+  flex-shrink: 0;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+
+  color: #172033;
+  font-size: 21px;
+}
+
+.modal-header p {
+  margin: 5px 0 0;
+
+  color: #64748b;
+  font-size: 13px;
+}
+
+.close-btn {
+  width: 36px;
+  height: 36px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: #f1f5f9;
+  color: #475569;
+
+  font-size: 24px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* =========================================================
+   EDIT FORM
+========================================================= */
+
+.edit-form {
+  padding: 25px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.form-grid {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 0 18px;
+}
+
+.edit-form label {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+
+  margin-bottom: 18px;
+
+  color: #334155;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.edit-form input,
+.edit-form textarea,
+.edit-form select {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 12px;
+
+  padding: 11px 12px;
+
+  background: #ffffff;
+  color: #1e293b;
+
+  font-size: 13px;
+  font-weight: 400;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.edit-form textarea {
+  resize: vertical;
+  min-height: 85px;
+}
+
+.edit-form input:hover,
+.edit-form textarea:hover,
+.edit-form select:hover {
+  border-color: #b8c1d1;
+}
+
+.edit-form input:focus,
+.edit-form textarea:focus,
+.edit-form select:focus {
+  border-color: #6366f1;
+
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.12);
+
+  background: #fcfcff;
+}
+
+/* =========================================================
+   MODAL ACTIONS
+========================================================= */
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 5px;
+  padding-top: 18px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.cancel-btn,
+.save-btn {
+  border: 0;
+
+  padding: 11px 20px;
+
+  border-radius: 12px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.cancel-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.cancel-btn:hover {
+  background: #e2e8f0;
+}
+
+.save-btn {
+  background: #4f46e5;
+  color: white;
+
+  box-shadow: 0 5px 14px rgba(79, 70, 229, 0.2);
+}
+
+.save-btn:hover {
+  background: #4338ca;
+
+  transform: translateY(-1px);
+
+  box-shadow: 0 7px 18px rgba(79, 70, 229, 0.28);
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 950px) {
+
+  main {
+    padding: 20px;
+  }
+
+  .student-header,
+  .student-selector,
+  .progress-summary,
+  .schedule-section {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  .schedule-item {
+    grid-template-columns:
+      100px
+      minmax(180px, 1fr)
+      60px
+      120px
+      65px;
+
+    gap: 12px;
+  }
+
+  .student-selector select {
+    min-width: 250px;
+  }
+}
+
+/* =========================================================
+   TABLET / MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .logout-btn {
+    top: 12px;
+    right: 15px;
+  }
+
+  .student-header {
+    margin-top: 60px;
+
+    padding: 22px;
+
+    align-items: flex-start;
+
+    gap: 20px;
+  }
+
+  .student-header h2 {
+    font-size: 21px;
+  }
+
+  .daily-hours {
+    font-size: 25px;
+  }
+
+  .progress-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .student-selector label {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .student-selector select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .schedule-item {
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+
+    padding: 18px;
+  }
+
+  .date-box {
+    border-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+
+    padding-right: 0;
+    padding-bottom: 10px;
+  }
+
+  .hours {
+    font-size: 16px;
+  }
+
+  .section-title {
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal {
+    width: calc(100% - 20px);
+    max-height: calc(100vh - 20px);
+    border-radius: 14px;
+  }
+
+  .edit-form {
+    padding: 20px;
+  }
+}
+/* =========================================================
+   NO PLAN / GENERATE SECTION
+========================================================= */
+
+.no-plan-section {
+  max-width: 1250px;
+  margin: 30px auto 50px;
+  background: #ffffff;
+  border: 1px solid #eef0f4;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.no-plan-section .section-title {
+  padding: 22px 25px 0;
+  margin-bottom: 0;
+}
+
+.no-plan-section .edit-form {
+  padding-top: 18px;
+}
+
+/* =========================================================
+   RESOURCE LINK (video / practice — now clickable)
+========================================================= */
+
+.resource-link {
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.resource-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   PROFILE MODAL
+========================================================= */
+
+.profile-card {
+  background: white;
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), 0 1px 4px rgba(0,0,0,0.02);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.profile-details h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #111827;
+}
+
+.profile-details p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.info-value {
+  font-size: 15px;
+  color: #111827;
+  font-weight: 500;
+}
+
+.profile-modal-backdrop {
+  background: transparent;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+}
+
+.modal-profile-card {
+  width: 90%;
+  max-width: 260px;
+  position: absolute;
+  top: 80px;
+  right: 40px;
+  margin: 0;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.close-profile-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.close-profile-btn:hover {
+  color: #111827;
+}
+
+.profile-modal-actions {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.profile-circle-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.profile-circle-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+/* =========================================================
+   VIDEO MODAL (In-Platform Player)
+========================================================= */
+
+.video-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.video-modal {
+  background: #0f172a;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 860px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+}
+
+.video-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #172033;
+}
+
+.video-modal-header h3 {
+  margin: 0;
+  color: #f1f5f9;
+  font-size: 15px;
+  font-weight: 600;
+  padding-right: 12px;
+}
+
+.video-modal-close {
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.video-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.video-modal-body {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.video-modal-body iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.video-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+  color: #cbd5e1;
+  text-align: center;
+  padding: 20px;
+}
+
+.video-fallback a {
+  color: #60a5fa;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.video-fallback a:hover {
+  text-decoration: underline;
+}
+
+.resource-link.video-link {
+  border: none;
+  cursor: pointer;
+}

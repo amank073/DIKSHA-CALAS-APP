@@ -1,0 +1,206 @@
+<div class="admin-page">
+
+  <header class="dashboard-header">
+
+    <div class="header-content">
+      <h1>Manage Study Plans</h1>
+      <p>Pick a student to view, generate, or override their study plan</p>
+    </div>
+
+  </header>
+
+  <app-loading-spinner *ngIf="loadingStudents" label="Loading students..."></app-loading-spinner>
+
+  <div class="content" *ngIf="!loadingStudents">
+
+    <app-error-banner [message]="errorMessage"></app-error-banner>
+
+    <div class="success-banner" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+
+    <app-empty-state *ngIf="students.length === 0" message="No students yet."></app-empty-state>
+
+    <div class="layout" *ngIf="students.length > 0">
+
+      <!-- Student picker -->
+      <div class="picker-col">
+        <app-student-picker [students]="students" [selectedId]="selectedStudentId"
+          (studentSelected)="onStudentSelected($event)"></app-student-picker>
+      </div>
+
+      <!-- Plan detail -->
+      <div class="detail-col">
+
+        <app-empty-state *ngIf="!selectedStudentId"
+          message="Select a student from the list to view their study plan."></app-empty-state>
+
+        <app-loading-spinner *ngIf="selectedStudentId && loadingPlan" label="Loading plan..."></app-loading-spinner>
+
+        <!-- No plan yet -->
+        <div class="section" *ngIf="selectedStudentId && !loadingPlan && noPlanFound">
+
+          <div class="section-heading">
+            <h2>No Active Study Plan</h2>
+            <button class="toggle-btn" (click)="toggleGenerateForm()">
+              {{ showGenerateForm ? 'Cancel' : 'Generate Plan' }}
+            </button>
+          </div>
+
+          <p class="muted-text" *ngIf="!showGenerateForm">
+            This student doesn't have an active study plan yet.
+          </p>
+
+          <div class="generate-form" *ngIf="showGenerateForm">
+
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Exam Type</label>
+                <select [(ngModel)]="generateForm.examType" name="examType">
+                  <option value="JEE">JEE</option>
+                  <option value="NEET">NEET</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Plan Variant</label>
+                <select [(ngModel)]="generateForm.variant" name="variant">
+                  <option value="MONTH_24">24 Month</option>
+                  <option value="MONTH_12">12 Month</option>
+                  <option value="DROPPER_12">Dropper (12 Month)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Start Date</label>
+                <input type="date" [(ngModel)]="generateForm.startDate" name="startDate" />
+              </div>
+              <div class="form-field">
+                <label>End Date</label>
+                <input type="date" [(ngModel)]="generateForm.endDate" name="endDate" />
+              </div>
+              <div class="form-field">
+                <label>Daily Study Hours</label>
+                <input type="number" min="0.5" step="0.5" [(ngModel)]="generateForm.dailyStudyHours"
+                  name="dailyStudyHours" />
+              </div>
+            </div>
+
+            <button type="button" class="submit-btn" [disabled]="generating" (click)="generatePlan()">
+              {{ generating ? 'Generating...' : 'Generate Study Plan' }}
+            </button>
+
+          </div>
+
+        </div>
+
+        <!-- Existing plan -->
+        <div *ngIf="selectedStudentId && !loadingPlan && !noPlanFound && plan">
+
+          <div class="section">
+
+            <div class="section-heading">
+              <h2>Plan Summary</h2>
+            </div>
+
+            <div class="plan-summary-grid">
+              <div>
+                <span class="label">Variant</span>
+                <strong>{{ plan.variant }} <span *ngIf="examType">({{ examType }})</span></strong>
+              </div>
+              <div>
+                <span class="label">Status</span>
+                <strong>{{ plan.status }}</strong>
+              </div>
+              <div>
+                <span class="label">Start</span>
+                <strong>{{ plan.startDate }}</strong>
+              </div>
+              <div>
+                <span class="label">End</span>
+                <strong>{{ plan.endDate }}</strong>
+              </div>
+              <div>
+                <span class="label">Daily Hours</span>
+                <strong>{{ plan.dailyStudyHours }}</strong>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="section">
+
+            <div class="section-heading">
+              <h2>Schedule ({{ schedule.length }} items)</h2>
+            </div>
+
+            <app-empty-state *ngIf="schedule.length === 0" message="No schedule rows yet."></app-empty-state>
+
+            <div class="schedule-table" *ngIf="schedule.length > 0">
+
+              <div class="schedule-row schedule-head">
+                <span>Date</span>
+                <span>Subject</span>
+                <span>Hours</span>
+                <span>Type</span>
+                <span></span>
+              </div>
+
+              <ng-container *ngFor="let item of schedule">
+
+                <div class="schedule-row">
+                  <span>{{ item.scheduledDate }}</span>
+                  <span>{{ cleanSubjectName(item.subjectName) || '\u2014' }}</span>
+                  <span>{{ item.plannedHours }}h</span>
+                  <span>{{ item.testType || 'Study' }}</span>
+                  <button type="button" class="edit-link" (click)="editSchedule(item)">Edit</button>
+                </div>
+
+                <div class="edit-panel" *ngIf="editingItem && editingItem.id === item.id">
+
+                  <div class="form-grid">
+                    <div class="form-field">
+                      <label>Date</label>
+                      <input type="date" [(ngModel)]="editingItem.scheduledDate" name="editDate" />
+                    </div>
+                    <div class="form-field">
+                      <label>Subject</label>
+                      <input type="text" [(ngModel)]="editingItem.subjectName" name="editSubject" />
+                    </div>
+                    <div class="form-field">
+                      <label>Hours</label>
+                      <input type="number" min="0" step="0.5" [(ngModel)]="editingItem.plannedHours" name="editHours" />
+                    </div>
+                    <div class="form-field">
+                      <label>Test Type</label>
+                      <input type="text" [(ngModel)]="editingItem.testType" name="editTestType" />
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label>Notes</label>
+                    <input type="text" [(ngModel)]="editingItem.notes" name="editNotes" />
+                  </div>
+
+                  <div class="edit-actions">
+                    <button type="button" class="submit-btn" [disabled]="saving" (click)="saveOverride()">
+                      {{ saving ? 'Saving...' : 'Save' }}
+                    </button>
+                    <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancel</button>
+                  </div>
+
+                </div>
+
+              </ng-container>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

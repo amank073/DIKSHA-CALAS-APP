@@ -1,0 +1,104 @@
+<div class="login-page">
+
+  <div class="login-card">
+
+    <div class="brand">
+      <div class="logo">D</div>
+      <h1>DIKSHA CALAS</h1>
+      <p>Create your student account</p>
+    </div>
+
+    <form (ngSubmit)="register()" *ngIf="!successMessage">
+
+      <div class="form-row">
+
+        <div class="form-group">
+          <label>First Name <span class="required-star">*</span></label>
+          <input type="text" name="firstName" [(ngModel)]="firstName" placeholder="First name" autocomplete="given-name"
+            required />
+        </div>
+
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" name="lastName" [(ngModel)]="lastName" placeholder="Last name"
+            autocomplete="family-name" />
+        </div>
+
+      </div>
+
+      <div class="form-group">
+        <label>Email <span class="required-star">*</span></label>
+        <input type="email" name="email" [(ngModel)]="email" placeholder="Enter your email" autocomplete="email"
+          required />
+      </div>
+
+      <div class="form-group">
+        <label>Phone <span class="required-star">*</span></label>
+        <input type="tel" name="phone" [(ngModel)]="phone" (input)="onPhoneInput($event)" placeholder="Phone number" autocomplete="tel" required maxlength="10" />
+      </div>
+
+      <div class="form-group">
+        <label>Password <span class="required-star">*</span></label>
+        <input type="password" name="password" [(ngModel)]="password" placeholder="Enter password"
+          autocomplete="new-password" required />
+      </div>
+
+      <div class="form-group">
+        <label>Confirm Password <span class="required-star">*</span></label>
+        <input type="password" name="confirmPassword" [(ngModel)]="confirmPassword" placeholder="Re-enter your password"
+          autocomplete="new-password" required />
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-group">
+          <label>Exam Type <span class="required-star">*</span></label>
+          <select name="examType" [(ngModel)]="examType" required>
+            <option value="">Select exam</option>
+            <option value="JEE">JEE</option>
+            <option value="NEET">NEET</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Current Class <span class="required-star">*</span></label>
+          <select name="currentClass" [(ngModel)]="currentClass" required>
+            <option value="">Select class</option>
+            <option value="CLASS_11">Class 11</option>
+            <option value="CLASS_12">Class 12</option>
+            <option value="DROPPER">Dropper</option>
+          </select>
+        </div>
+
+      </div>
+
+
+      <p class="helper-note">
+        Your teacher will be assigned by an Admin after you register — you can
+        generate your own study plan right away in the meantime.
+      </p>
+
+      @if (errorMessage) {
+      <div class="error">
+        {{ errorMessage }}
+      </div>
+      }
+
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Creating account...' : 'Create Account' }}
+      </button>
+
+    </form>
+
+    <div class="success" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+
+    <div class="switch-link">
+      Already have an account?
+      <a routerLink="/login">Sign in</a>
+    </div>
+
+  </div>
+
+</div>

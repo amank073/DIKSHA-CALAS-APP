@@ -1,0 +1,328 @@
+<div class="page">
+  <!-- =========================
+       HEADER
+  ========================== -->
+
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Manage Students</h1>
+
+      <p>View, update and assign teachers to students.</p>
+    </div>
+  </div>
+
+  <!-- =========================
+       MESSAGES
+  ========================== -->
+
+  <div class="success-message" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- =========================
+       STUDENTS HEADER
+  ========================== -->
+
+  <div class="section-header">
+    <div>
+      <h2>Students</h2>
+    </div>
+
+    <!-- SEARCH -->
+
+    <div class="search-box">
+      <input type="text" [(ngModel)]="searchText" placeholder="Search students..." />
+    </div>
+  </div>
+
+  <!-- =========================
+       LOADING
+  ========================== -->
+
+  <div class="loading" *ngIf="loadingStudents">
+    <div class="spinner"></div>
+
+    <span> Loading students... </span>
+  </div>
+
+  <!-- =========================
+       EMPTY STATE
+  ========================== -->
+
+  <div class="empty-state" *ngIf="!loadingStudents && filteredStudents.length === 0">
+    <div class="empty-icon">🎓</div>
+
+    <h3>No students found</h3>
+
+    <p>No students match your search.</p>
+  </div>
+
+  <!-- =========================
+       STUDENTS TABLE
+  ========================== -->
+
+  <div class="table-wrapper" *ngIf="!loadingStudents && filteredStudents.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+
+          <th>Assigned Teacher</th>
+
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let student of filteredStudents">
+          <!-- STUDENT -->
+
+          <td>
+            <div class="student-cell">
+              <div class="avatar">
+                {{ student.studentName?.charAt(0) || 'S' }}
+              </div>
+
+              <div class="student-info">
+                <strong>
+                  {{ student.studentName }}
+                </strong>
+                <small> {{ student.targetExam }} </small>
+              </div>
+            </div>
+          </td>
+
+          <!-- END EMAIL/PHONE REMOVED -->
+
+          <!-- ASSIGNED TEACHER -->
+
+          <td class="assigned-teacher-cell">
+            <span *ngIf="student.teacherName">{{ student.teacherName }}</span>
+            <span *ngIf="!student.teacherName" class="unassigned-text">Unassigned</span>
+          </td>
+
+          <!-- ACTIONS -->
+
+          <td>
+            <div class="actions">
+              <!-- VIEW -->
+              <button type="button" class="view-btn" (click)="viewStudent(student)">View</button>
+
+              <!-- EDIT -->
+              <button type="button" class="edit-btn" (click)="openEdit(student)">Edit</button>
+
+              <!-- ASSIGN TEACHER -->
+              <button type="button" class="teacher-btn" (click)="openAssignTeacher(student)">
+                Assign Teacher
+              </button>
+
+              <!-- DELETE -->
+              <button type="button" class="delete-btn" (click)="deleteStudent(student)">
+                Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- =====================================================
+       VIEW STUDENT MODAL
+  ====================================================== -->
+
+  <div class="modal-overlay" *ngIf="showStudentModal" (click)="closeStudentDetails()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Student Details</h2>
+
+        <button type="button" class="close-btn" (click)="closeStudentDetails()">×</button>
+      </div>
+
+      <!-- DETAILS -->
+
+      <div class="details" *ngIf="selectedStudent">
+        <!-- STUDENT ID -->
+
+        <div class="detail-row">
+          <span> Student ID </span>
+
+          <strong>
+            {{ selectedStudent.studentId }}
+          </strong>
+        </div>
+
+        <!-- NAME -->
+
+        <div class="detail-row">
+          <span> Name </span>
+
+          <strong>
+            {{ selectedStudent.studentName }}
+          </strong>
+        </div>
+
+        <!-- EMAIL -->
+
+        <div class="detail-row">
+          <span> Email </span>
+
+          <strong>
+            {{ selectedStudent.email }}
+          </strong>
+        </div>
+
+        <!-- PHONE -->
+
+        <div class="detail-row">
+          <span> Phone </span>
+
+          <strong>
+            {{ selectedStudent.phone || '—' }}
+          </strong>
+        </div>
+
+
+        <!-- CLASS -->
+
+        <div class="detail-row">
+          <span> Class </span>
+
+          <strong>
+            {{ selectedStudent.currentClass || '—' }}
+          </strong>
+        </div>
+
+        <!-- EXAM TYPE -->
+
+        <div class="detail-row">
+          <span> Target Exam </span>
+
+          <strong>
+            {{ selectedStudent.targetExam || '—' }}
+          </strong>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+
+      <div class="modal-footer">
+        <button type="button" class="secondary-btn" (click)="closeStudentDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       EDIT STUDENT MODAL
+  ====================================================== -->
+
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEdit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Edit Student</h2>
+
+        <button type="button" class="close-btn" (click)="closeEdit()">×</button>
+      </div>
+
+      <!-- FORM -->
+
+      <div class="form">
+        <!-- FIRST NAME -->
+
+        <label> First Name </label>
+
+        <input type="text" [(ngModel)]="editForm.firstName" placeholder="Enter first name" />
+
+        <!-- LAST NAME -->
+
+        <label> Last Name </label>
+
+        <input type="text" [(ngModel)]="editForm.lastName" placeholder="Enter last name" />
+
+        <!-- EMAIL -->
+
+        <label> Email </label>
+
+        <input type="email" [(ngModel)]="editForm.email" placeholder="Enter email" />
+
+        <!-- PHONE -->
+
+        <label> Phone </label>
+
+        <input type="text" [(ngModel)]="editForm.phone" placeholder="Enter phone number" />
+      </div>
+
+      <!-- FOOTER -->
+
+      <div class="modal-footer">
+        <button type="button" class="secondary-btn" (click)="closeEdit()">Cancel</button>
+
+        <button type="button" class="edit-btn save-btn" (click)="saveStudent()">
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       ASSIGN TEACHER MODAL
+  ====================================================== -->
+
+  <div class="modal-overlay" *ngIf="showTeacherModal" (click)="closeTeacherModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Assign Teacher</h2>
+
+        <button type="button" class="close-btn" (click)="closeTeacherModal()">×</button>
+      </div>
+
+      <!-- STUDENT INFO -->
+
+      <div class="assign-info" *ngIf="selectedStudent">
+        <p>Student</p>
+
+        <strong>
+          {{ selectedStudent.studentName }}
+        </strong>
+      </div>
+
+      <form (ngSubmit)="assignTeacher()" class="edit-form">
+        <div class="form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Select Subject</label>
+              <select [(ngModel)]="assignForm.subject" name="subject" required (change)="loadTeachers()">
+                <option value="" disabled selected>-- Select Subject --</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option *ngIf="selectedStudent?.targetExam !== 'NEET'" value="Mathematics">Mathematics</option>
+                <option *ngIf="selectedStudent?.targetExam !== 'JEE'" value="Biology">Biology</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row" *ngIf="assignForm.subject">
+            <div class="form-field full-width">
+              <label>Select Teacher</label>
+              <select [(ngModel)]="assignForm.teacherId" name="teacherId" required>
+                <option value="null">-- Select Teacher --</option>
+                <option *ngFor="let t of filteredTeachers" [value]="t.id">
+                  {{ t.firstName }} {{ t.lastName }} ({{ t.subjectSpecialization }})
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="modal-footer">
+          <button type="button" class="secondary-btn" (click)="closeTeacherModal()">Cancel</button>
+          <button type="submit" class="teacher-btn assign-btn">Assign Teacher</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

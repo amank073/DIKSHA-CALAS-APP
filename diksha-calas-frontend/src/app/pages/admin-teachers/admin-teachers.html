@@ -1,0 +1,222 @@
+<div class="admin-page">
+
+  <!-- Header -->
+  <header class="dashboard-header">
+
+    <div class="header-content">
+      <h1>Manage Teachers</h1>
+      <p>Create teacher accounts and view their assigned students</p>
+    </div>
+
+  </header>
+
+  <app-loading-spinner *ngIf="loading" label="Loading teachers..."></app-loading-spinner>
+
+  <div class="content" *ngIf="!loading">
+
+    <app-error-banner [message]="errorMessage"></app-error-banner>
+
+    <div class="success-banner" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+
+    <!-- Create Teacher -->
+    <section class="section">
+
+      <div class="section-heading">
+        <h2>Add a Teacher</h2>
+        <button class="toggle-btn" (click)="toggleCreateForm()">
+          {{ showCreateForm ? 'Cancel' : '+ New Teacher' }}
+        </button>
+      </div>
+
+    </section>
+
+    <!-- Teacher List -->
+    <section class="section">
+
+      <div class="section-heading">
+        <h1>Teachers</h1>
+        <div class="search-bar">
+          <input type="text" placeholder="Search teachers by name, email..." [(ngModel)]="searchQuery" />
+        </div>
+      </div>
+
+      <app-empty-state *ngIf="filteredTeachers.length === 0" message="No teachers found."></app-empty-state>
+
+      <div class="teacher-list" *ngIf="filteredTeachers.length > 0">
+
+        <div class="teacher-card" *ngFor="let t of filteredTeachers">
+
+          <div class="teacher-row" (click)="toggleExpand(t.id)">
+
+            <div class="teacher-info">
+              <strong>{{ t.firstName }} {{ t.lastName }}</strong>
+              <span>{{ t.subjectSpecialization }}</span>
+            </div>
+
+            <div class="teacher-actions">
+
+              <button type="button" class="view-btn"
+                style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 12px; font-size: 12px; font-weight: 500; cursor: pointer;"
+                (click)="viewTeacher(t); $event.stopPropagation()">
+                View
+              </button>
+
+              <span class="status-pill" [class.inactive]="!t.enabled">
+                {{ t.enabled ? 'Active' : 'Inactive' }}
+              </span>
+
+              <button type="button" class="status-toggle-btn" (click)="toggleStatus(t); $event.stopPropagation()">
+                {{ t.enabled ? 'Deactivate' : 'Activate' }}
+              </button>
+
+              <span class="expand-arrow">{{ expandedTeacherId === t.id ? '▲' : '▼' }}</span>
+            </div>
+
+          </div>
+
+          <div class="assigned-students" *ngIf="expandedTeacherId === t.id">
+
+            <p class="assigned-heading">
+              Assigned Students ({{ assignedStudentsFor(t.id).length }})
+            </p>
+
+            <div class="student-chip" *ngFor="let s of assignedStudentsFor(t.id)">
+              {{ s.studentName }} <span>{{ s.email }}</span>
+            </div>
+
+            <p class="no-students" *ngIf="assignedStudentsFor(t.id).length === 0">
+              No students assigned yet.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- Create / Edit Modal -->
+  <div class="modal-overlay" *ngIf="showCreateForm" (click)="toggleCreateForm()">
+    <div class="modal create-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditing ? 'Edit Teacher' : 'Add a Teacher' }}</h2>
+        <button type="button" class="close-btn" (click)="toggleCreateForm()">×</button>
+      </div>
+
+      <form class="create-form" (ngSubmit)="createTeacher()">
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>First Name</label>
+            <input type="text" [(ngModel)]="createForm.firstName" name="firstName" />
+          </div>
+          <div class="form-field">
+            <label>Last Name</label>
+            <input type="text" [(ngModel)]="createForm.lastName" name="lastName" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="createForm.email" name="email" required
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" />
+          </div>
+          <div class="form-field">
+            <label>Phone</label>
+            <input type="tel" [(ngModel)]="createForm.phone" name="phone" required maxlength="10" pattern="[0-9]{10}" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field" *ngIf="!isEditing">
+            <label>Temporary Password</label>
+            <input type="password" [(ngModel)]="createForm.password" name="password" />
+          </div>
+          <div class="form-field">
+            <label>Subject Specialization</label>
+            <select [(ngModel)]="createForm.subjectSpecialization" name="subjectSpecialization">
+              <option value="">Select subject</option>
+              <option value="Physics">Physics</option>
+              <option value="Chemistry">Chemistry</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="Biology">Biology</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="secondary-btn" (click)="toggleCreateForm()">Cancel</button>
+          <button type="submit" [ngClass]="isEditing ? 'edit-btn save-btn' : 'submit-btn'" [disabled]="saving">
+            {{ saving ? 'Saving...' : (isEditing ? 'Save Changes' : 'Create Teacher') }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirmModal" (click)="closeDeleteConfirmModal()">
+    <div class="modal delete-modal">
+      <h2>Delete Teacher Permanently?</h2>
+      <p>Are you sure? This action cannot be undone.</p>
+
+      <div class="modal-actions">
+        <button type="button" class="secondary-btn" (click)="closeDeleteConfirmModal()">Cancel</button>
+        <button type="button" class="delete-btn" (click)="permanentDeleteTeacher()">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Teacher Modal -->
+  <div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+    <div class="modal view-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Teacher Details</h2>
+        <button type="button" class="close-btn" (click)="closeViewModal()">×</button>
+      </div>
+
+      <!-- DETAILS -->
+      <div class="details" *ngIf="selectedTeacher">
+        <div class="detail-row">
+          <span>Name</span>
+          <strong>{{ selectedTeacher.firstName }} {{ selectedTeacher.lastName }}</strong>
+        </div>
+
+        <div class="detail-row">
+          <span>Email</span>
+          <strong>{{ selectedTeacher.email }}</strong>
+        </div>
+
+        <div class="detail-row">
+          <span>Phone</span>
+          <strong>{{ selectedTeacher.phone || 'N/A' }}</strong>
+        </div>
+
+        <div class="detail-row">
+          <span>Subject</span>
+          <strong>{{ selectedTeacher.subjectSpecialization }}</strong>
+        </div>
+
+        <div class="detail-row">
+          <span>Status</span>
+          <strong>{{ selectedTeacher.enabled ? 'Active' : 'Inactive' }}</strong>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="modal-footer">
+        <button type="button" class="secondary-btn" (click)="editTeacherFromView()">Edit</button>
+        <button type="button" class="secondary-btn" (click)="deleteTeacherFromView()">Delete</button>
+        <button type="button" class="secondary-btn" (click)="closeViewModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+</div>

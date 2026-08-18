@@ -1,0 +1,761 @@
+<div class="student-dashboard">
+
+  <!-- =========================
+       TOP BAR
+  ========================== -->
+
+  <header class="topbar">
+
+    <div>
+      <h1>DIKSHA CALAS</h1>
+      <p>Student Dashboard</p>
+    </div>
+
+
+    <div class="top-actions">
+
+      <button type="button" class="refresh-btn" (click)="loadDashboard()">
+        Refresh
+      </button>
+
+      <button *ngIf="userProfile" type="button" class="profile-circle-btn" (click)="toggleProfileModal()">
+        {{ userProfile.firstName?.charAt(0) }}{{ userProfile.lastName?.charAt(0) }}
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <!-- =========================
+       MAIN CONTENT
+  ========================== -->
+
+  <main>
+
+
+    <!-- =========================
+         LOADING
+    ========================== -->
+
+    <div *ngIf="loading" class="loading">
+      Loading dashboard...
+    </div>
+
+
+    <!-- =========================
+         ERROR
+    ========================== -->
+
+    <div *ngIf="!loading && errorMessage" class="error">
+      {{ errorMessage }}
+    </div>
+
+
+    <!-- =========================
+         STAT CARDS
+    ========================== -->
+
+    <div class="stats" *ngIf="!loading && dashboard">
+
+
+      <!-- Planned Hours -->
+
+      <div class="card">
+
+        <span>
+          Planned Hours
+        </span>
+
+        <strong>
+          {{ (dashboard?.summary?.totalPlannedHours ?? 0) | number:'1.0-2' }}h
+        </strong>
+
+      </div>
+
+
+      <!-- Studied Hours -->
+
+      <div class="card">
+
+        <span>
+          Studied Hours
+        </span>
+
+        <strong>
+          {{ (dashboard?.summary?.studiedHours ?? 0) | number:'1.0-2' }}h
+        </strong>
+
+      </div>
+
+
+      <!-- Completed -->
+
+      <div class="card">
+
+        <span>
+          Completed
+        </span>
+
+        <strong>
+          {{ dashboard?.summary?.completedSchedules ?? 0 }}
+        </strong>
+
+      </div>
+
+
+      <!-- Overall Progress -->
+
+      <div class="card">
+
+        <span>
+          Overall Progress
+        </span>
+
+        <strong>
+          {{
+          (dashboard?.summary?.completionPercentage ?? 0)
+          | number:'1.0-1'
+          }}%
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================
+         MY STUDY PLAN
+    ========================== -->
+
+    <section>
+
+      <div class="section-heading">
+
+        <div>
+
+          <h2>
+            My Study Plan
+          </h2>
+
+          <p>
+            Your current active learning plan
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- Study Plan Card -->
+
+      <div class="plan-card" *ngIf="plan">
+
+
+        <!-- Plan -->
+
+        <div>
+
+          <span>
+            Plan
+          </span>
+
+          <strong>
+            {{ plan?.variant }} <span *ngIf="examType">({{ examType }})</span>
+          </strong>
+
+        </div>
+
+
+        <!-- Status -->
+
+        <div>
+
+          <span>
+            Status
+          </span>
+
+          <strong class="plan-status" [class.active]="plan?.status === 'ACTIVE'">
+            {{ plan?.status }}
+          </strong>
+
+        </div>
+
+
+        <!-- Start Date -->
+
+        <div>
+
+          <span>
+            Start Date
+          </span>
+
+          <strong>
+            {{ plan?.startDate }}
+          </strong>
+
+        </div>
+
+
+        <!-- End Date -->
+
+        <div>
+
+          <span>
+            End Date
+          </span>
+
+          <strong>
+            {{ plan?.endDate }}
+          </strong>
+
+        </div>
+
+
+        <!-- Daily Study -->
+
+        <div>
+
+          <span>
+            Daily Study
+          </span>
+
+          <strong>
+            {{ plan?.dailyStudyHours | number:'1.0-2' }}h
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- No Plan -->
+
+      <div *ngIf="!loading && !plan" class="empty">
+        No active study plan available.
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         GENERATE / REGENERATE STUDY PLAN
+    ========================== -->
+
+    <section>
+
+      <div class="section-heading">
+
+        <div>
+
+          <h2>
+            {{ plan ? 'Regenerate Study Plan' : 'Generate Your Study Plan' }}
+          </h2>
+
+          <p>
+            The SSP algorithm builds a day-by-day schedule from your enrolled course's syllabus
+          </p>
+
+        </div>
+
+        <button type="button" class="refresh-btn" (click)="toggleGenerateForm()">
+          {{ showGenerateForm ? 'Cancel' : (plan ? 'Regenerate' : 'Generate Plan') }}
+        </button>
+
+      </div>
+
+      <div class="plan-card generate-form" *ngIf="showGenerateForm">
+
+        <div class="form-grid">
+
+          <div class="form-field">
+            <label>Exam Type</label>
+            <input type="text" [(ngModel)]="generateForm.examType" name="examType" readonly />
+          </div>
+
+          <div class="form-field">
+            <label>Plan Variant</label>
+            <select [(ngModel)]="generateForm.variant" name="variant">
+              <option value="MONTH_24">24 Month</option>
+              <option value="MONTH_12">12 Month</option>
+              <option value="DROPPER_12">Dropper (12 Month)</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Start Date</label>
+            <input type="date" [(ngModel)]="generateForm.startDate" name="startDate" />
+          </div>
+
+          <div class="form-field">
+            <label>End Date</label>
+            <input type="date" [(ngModel)]="generateForm.endDate" name="endDate" />
+          </div>
+
+          <div class="form-field">
+            <label>Daily Study Hours</label>
+            <input type="number" min="0.5" step="0.5" [(ngModel)]="generateForm.dailyStudyHours"
+              name="dailyStudyHours" />
+          </div>
+
+        </div>
+
+        <div class="error" *ngIf="generateError">
+          {{ generateError }}
+        </div>
+
+        <button type="button" class="generate-btn" [disabled]="generating" (click)="generatePlan()">
+          {{ generating ? 'Generating...' : 'Generate Study Plan' }}
+        </button>
+
+      </div>
+
+    </section>
+
+
+
+
+
+    <!-- =========================
+         TODAY'S SCHEDULE
+    ========================== -->
+
+    <section>
+
+      <div class="section-heading">
+
+        <div>
+
+          <h2>
+            Today's Schedule
+          </h2>
+
+          <p>
+            Your planned learning activities for today
+          </p>
+
+        </div>
+
+
+        <span class="task-count">
+
+          {{ schedule?.length ?? 0 }} tasks
+
+        </span>
+
+      </div>
+
+
+      <!-- Empty Schedule -->
+
+      <div *ngIf="
+          !loading &&
+          (!schedule || schedule.length === 0)
+        " class="empty">
+        No schedule available for today.
+      </div>
+
+
+      <!-- Schedule Items -->
+
+      <div *ngFor="let item of schedule" class="schedule-item">
+
+        <div class="schedule-content">
+
+          <h3>
+            {{ cleanSubjectName(item.subjectName) }}
+          </h3>
+
+
+          <p>
+            {{ item.topicName }}
+          </p>
+
+
+          <small *ngIf="item.resourceTitle && !item.videoUrl && !item.videoTitle">
+            📚 {{ item.resourceTitle }}
+          </small>
+
+
+          <small *ngIf="item.testTitle">
+            📝 {{ item.testTitle }}
+          </small>
+
+
+          <!-- Video (ContentRecommender) — plays in an on-page modal,
+               never redirects away to youtube.com -->
+
+          <button type="button" *ngIf="item.videoUrl" (click)="openVideo(item)" class="resource-link video-link">
+            ▶ Watch: {{ item.videoTitle || 'Video' }}
+          </button>
+
+
+          <!-- Practice / DPP (PracticeAllocator) -->
+
+          <a *ngIf="item.practiceLink" [href]="item.practiceLink" target="_blank" rel="noopener noreferrer"
+            class="resource-link practice-link">
+            ✎ {{ item.practiceTitle || 'Practice' }}
+            <span *ngIf="item.practiceQuestionCount">({{ item.practiceQuestionCount }} questions)</span>
+          </a>
+
+        </div>
+
+
+        <!-- Hours -->
+
+        <div class="hours">
+          {{ item.plannedHours | number:'1.0-2' }}h
+        </div>
+
+
+        <!-- Status -->
+
+        <div class="badge" [class.manual]="item.manualOverride">
+
+          {{
+          item.manualOverride
+          ? 'Teacher Updated'
+          : 'Planned'
+          }}
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         FULL STUDY PLAN — Phase Timeline + Weekly Parallel Tracks + Calendar navigation
+    ========================== -->
+
+    <section *ngIf="plan">
+
+      <div class="section-heading">
+        <div>
+          <h2>Full Study Plan</h2>
+          <p>Macro phases, parallel subject tracks, and the complete day-by-day schedule</p>
+        </div>
+      </div>
+
+      <!-- Macro Plan Phase Timeline -->
+      <div class="plan-card full-plan-block">
+        <h3 class="full-plan-block-title">Macro Plan Phases</h3>
+        <app-phase-timeline [phaseBreakdownJson]="plan.phaseBreakdown"></app-phase-timeline>
+      </div>
+
+      <!-- Weekly Parallel Subject Timeline -->
+      <div class="plan-card full-plan-block">
+        <h3 class="full-plan-block-title">Weekly Subject Tracks</h3>
+        <p class="full-plan-block-subtitle">Each subject advances independently, in parallel, every week</p>
+        <app-weekly-subject-timeline [entries]="allSchedules"></app-weekly-subject-timeline>
+      </div>
+
+      <!-- Full Micro Plan — month-by-month day list -->
+      <div class="plan-card full-plan-block">
+
+        <div class="month-nav">
+          <button type="button" (click)="goToPrevMonth()" [disabled]="currentMonthOffset === 0">← Prev</button>
+          <h3 class="full-plan-block-title">{{ currentMonthLabel }}</h3>
+          <button type="button" (click)="goToNextMonth()"
+            [disabled]="currentMonthOffset >= availableMonths.length - 1">Next →</button>
+        </div>
+
+        <p class="empty-note" *ngIf="currentMonthSchedules.length === 0">No schedule rows this month.</p>
+
+        <div class="month-day-list">
+          <table class="schedule-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Subject</th>
+                <th>Activity</th>
+                <th>Planned Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of currentMonthSchedules">
+                <td class="date-col"><span class="month-day-date">{{ item.scheduledDate }}</span></td>
+                <td class="subject-col">
+                  <span class="month-day-subject" *ngIf="item.subjectName">{{ cleanSubjectName(item.subjectName)
+                    }}</span>
+                  <span class="dash" *ngIf="!item.subjectName">—</span>
+                </td>
+                <td class="activity-col">
+                  <span class="month-day-test" *ngIf="item.testType && item.testType !== 'study'">
+                    {{ item.testType === 'subject_wise' ? 'Subject Test' : 'Topic Test' }}
+                    <em *ngIf="!item.testId">(pending)</em>
+                  </span>
+                  <span class="month-day-study" *ngIf="!item.testType || item.testType === 'study'">
+                    Study Session
+                  </span>
+                </td>
+                <td class="time-col"><span class="month-day-hours">{{ item.plannedHours | number:'1.0-2' }}h</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         SUBJECT PROGRESS
+    ========================== -->
+
+    <section>
+
+      <div class="section-heading">
+
+        <div>
+
+          <h2>
+            Subject Progress
+          </h2>
+
+          <p>
+            Performance across your subjects
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="subject-progress">
+
+        <div class="subject-card" *ngFor="
+            let subject of dashboard?.subjects ?? []
+          ">
+
+          <div class="subject-header">
+
+            <strong>
+              {{ cleanSubjectName(subject.subjectName) }}
+            </strong>
+
+            <span>
+
+              {{
+              subject.completionPercentage
+              | number:'1.0-1'
+              }}%
+
+            </span>
+
+          </div>
+
+
+          <div class="progress-bar">
+
+            <div class="progress-fill" [style.width.%]="
+                subject.completionPercentage
+              "></div>
+
+          </div>
+
+
+          <div class="subject-hours">
+
+            <span>
+              {{ subject.studiedHours | number:'1.0-2' }}h studied
+            </span>
+
+            <span>
+              {{ subject.plannedHours | number:'1.0-2' }}h planned
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- No Subjects -->
+
+      <div *ngIf="
+          !loading &&
+          (!dashboard?.subjects ||
+          dashboard.subjects.length === 0)
+        " class="empty">
+        No subject progress available.
+      </div>
+
+    </section>
+
+
+    <!-- =========================
+         RECENT PROGRESS
+    ========================== -->
+
+    <section>
+
+      <div class="section-heading">
+
+        <div>
+
+          <h2>
+            Recent Progress
+          </h2>
+
+          <p>
+            Your latest completed activities
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="recent-item" *ngFor="
+          let progress of dashboard?.recentProgress ?? []
+        ">
+
+        <div>
+
+          <strong>
+            {{ progress.topicName }}
+          </strong>
+
+          <p>
+            {{ progress.remarks }}
+          </p>
+
+        </div>
+
+
+        <div class="recent-hours">
+
+          {{ progress.studiedHours | number:'1.0-2' }}h
+
+        </div>
+
+
+        <span class="completed-badge">
+
+          {{ progress.status }}
+
+        </span>
+
+      </div>
+
+
+      <!-- No Recent Progress -->
+
+      <div *ngIf="
+          !loading &&
+          (!dashboard?.recentProgress ||
+          dashboard.recentProgress.length === 0)
+        " class="empty">
+        No recent progress available.
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================================================
+       VIDEO MODAL — plays inline, never navigates away to youtube.com
+  ========================================================= -->
+
+  <div class="video-modal-backdrop" *ngIf="playingVideo" (click)="closeVideo()">
+
+    <div class="video-modal" (click)="$event.stopPropagation()">
+
+      <div class="video-modal-header">
+        <h3>{{ playingVideo.title }}</h3>
+        <button type="button" class="video-modal-close" (click)="closeVideo()">✕</button>
+      </div>
+
+      <div class="video-modal-body">
+
+        <iframe *ngIf="playingVideo.embedUrl && !playingVideo.isVideoTag" [src]="playingVideo.embedUrl" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+
+        <video *ngIf="playingVideo.embedUrl && playingVideo.isVideoTag" [src]="playingVideo.embedUrl" controls autoplay
+          style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px;"></video>
+
+        <div class="video-fallback" *ngIf="!playingVideo.embedUrl && !isSearchingVideo && !videoSearchError">
+          <p>This topic doesn't have a specific video yet — here's a search instead.</p>
+          <a [href]="playingVideo.originalUrl" target="_blank" rel="noopener noreferrer">
+            Open YouTube search in a new tab →
+          </a>
+        </div>
+
+        <div class="video-error" *ngIf="videoSearchError" style="color: #dc3545; text-align: center; padding: 20px;">
+          <p>{{ videoSearchError }}</p>
+          <a [href]="playingVideo.originalUrl" target="_blank" rel="noopener noreferrer"
+            style="color: #007bff; text-decoration: underline;">
+            Open YouTube search in a new tab instead
+          </a>
+        </div>
+
+        <div class="video-loading" *ngIf="!playingVideo.embedUrl && isSearchingVideo"
+          style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 250px;">
+          <div class="spinner"></div>
+          <p style="margin-top: 15px; font-size: 1.1rem; color: #ddd;">Searching...</p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- =========================================================
+       PROFILE MODAL
+  ========================================================= -->
+
+  <div class="video-modal-backdrop profile-modal-backdrop" *ngIf="showProfileModal" (click)="closeProfileModal()">
+    <div class="profile-card modal-profile-card" (click)="$event.stopPropagation()">
+      <button class="close-profile-btn" (click)="closeProfileModal()">✕</button>
+
+      <div class="profile-header" style="justify-content: center; text-align: center; margin-top: 10px;">
+        <div class="profile-details">
+          <h2>{{ userProfile?.firstName }} {{ userProfile?.lastName }}</h2>
+          <p>{{ userProfile?.email }}</p>
+        </div>
+      </div>
+
+      <div class="profile-info-grid">
+        <div class="info-item">
+          <span class="info-label">Student ID</span>
+          <span class="info-value">{{ userProfile?.id || 'Not Assigned' }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Phone</span>
+          <span class="info-value">{{ userProfile?.phone || 'Not Assigned' }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Class</span>
+          <span class="info-value">{{ userProfile?.currentClass || 'Not Assigned' }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Target Exam</span>
+          <span class="info-value">{{ examType || userProfile?.targetExam || 'Not Assigned' }}</span>
+        </div>
+      </div>
+
+      <div class="profile-modal-actions">
+        <button type="button" class="logout-btn-global" (click)="logout()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Log out
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

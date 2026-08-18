@@ -1,0 +1,236 @@
+<!-- Admin Dashboard Header -->
+<header class="dashboard-header">
+
+  <div class="header-content">
+    <h1>Admin Dashboard</h1>
+    <p>Manage students, teachers and study plans</p>
+  </div>
+
+  <button
+    class="logout-btn-global"
+    (click)="logout()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+      <polyline points="16 17 21 12 16 7"></polyline>
+      <line x1="21" y1="12" x2="9" y2="12"></line>
+    </svg>
+    Log out
+  </button>
+
+</header>
+
+
+<!-- Welcome Section -->
+<section class="welcome-card">
+
+  <h2>Welcome, Admin 👋</h2>
+
+  <p>
+    You are successfully logged in as an administrator.
+    From here you can manage the complete CALAS system.
+  </p>
+
+</section>
+
+
+<!-- Management Cards -->
+<section class="management-grid">
+
+
+  <!-- Students Card -->
+  <div class="management-card">
+
+    <div class="card-icon">
+      🎓
+    </div>
+
+    <h2>Students</h2>
+
+    <p>
+      Manage students and their assigned teachers.
+    </p>
+
+    <div class="count">
+
+      <!-- Loading -->
+      <span *ngIf="loadingStudents">
+        Loading...
+      </span>
+
+      <!-- Exactly 1 -->
+      <span
+        *ngIf="!loadingStudents && students.length === 1">
+        1 Student
+      </span>
+
+      <!-- 0 or Multiple -->
+      <span
+        *ngIf="!loadingStudents && students.length !== 1">
+        {{ students.length }} Students
+      </span>
+
+    </div>
+
+    <button
+      class="manage-btn"
+      (click)="openStudents()">
+      Manage Students →
+    </button>
+
+  </div>
+
+
+
+  <!-- Teachers Card -->
+  <div class="management-card">
+
+    <div class="card-icon">
+      👩‍🏫
+    </div>
+
+    <h2>Teachers</h2>
+
+    <p>
+      Manage teachers and assigned students.
+    </p>
+
+    <div class="count">
+
+      <!-- Loading -->
+      <span *ngIf="loadingTeachers">
+        Loading...
+      </span>
+
+      <!-- Exactly 1 -->
+      <span
+        *ngIf="!loadingTeachers && teachers.length === 1">
+        1 Teacher
+      </span>
+
+      <!-- 0 or Multiple -->
+      <span
+        *ngIf="!loadingTeachers && teachers.length !== 1">
+        {{ teachers.length }} Teachers
+      </span>
+
+    </div>
+
+    <button
+      class="manage-btn"
+      (click)="openTeachers()">
+      Manage Teachers →
+    </button>
+
+  </div>
+
+
+
+  <!-- Study Plans Card -->
+  <div class="management-card">
+
+    <div class="card-icon">
+      📚
+    </div>
+
+    <h2>Study Plans</h2>
+
+    <p>
+      Manage and update student study plans and schedules.
+    </p>
+
+    <button
+      class="manage-btn"
+      (click)="openStudyPlans()">
+      Manage Study Plans →
+    </button>
+
+  </div>
+
+
+</section>
+
+
+
+<!-- Error Message -->
+<div
+  class="error-message"
+  *ngIf="errorMessage">
+
+  {{ errorMessage }}
+
+</div>
+
+
+
+<!-- System Overview -->
+<section class="overview-card">
+
+  <h2>System Overview</h2>
+
+
+  <div class="overview-grid">
+
+
+    <!-- Students Overview -->
+    <div class="overview-item">
+
+      <span>
+        Students
+      </span>
+
+      <strong>
+
+        <span *ngIf="loadingStudents">
+          ...
+        </span>
+
+        <span *ngIf="!loadingStudents">
+          {{ students.length }}
+        </span>
+
+      </strong>
+
+    </div>
+
+
+
+    <!-- Teachers Overview -->
+    <div class="overview-item">
+
+      <span>
+        Teachers
+      </span>
+
+      <strong>
+
+        <span *ngIf="loadingTeachers">
+          ...
+        </span>
+
+        <span *ngIf="!loadingTeachers">
+          {{ teachers.length }}
+        </span>
+
+      </strong>
+
+    </div>
+
+
+
+    <!-- Management Overview -->
+    <div class="overview-item">
+
+      <span>
+        Management
+      </span>
+
+      <strong>
+        Active
+      </strong>
+
+    </div>
+
+
+  </div>
+
+</section>
