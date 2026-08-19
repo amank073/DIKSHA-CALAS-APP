@@ -78,7 +78,7 @@ const fmt = (d: Date) => d.toLocaleDateString('en-IN', { day: '2-digit', month: 
     .phase-card {
       display: flex;
       flex: 1;
-      min-width: 260px;
+      min-width: 0;
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 12px;

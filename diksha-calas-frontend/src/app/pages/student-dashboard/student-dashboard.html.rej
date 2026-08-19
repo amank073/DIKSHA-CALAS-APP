@@ -1,0 +1,40 @@
+@@ -502,3 +502,39 @@
+       </div>
+ 
+     </section>
++
++    <!-- =========================
++         RECENT PROGRESS
++    ========================== -->
++
++    <section>
++
++      <div class="section-heading">
++        <div>
++          <h2>Recent Progress</h2>
++          <p>Your latest completed activities</p>
++        </div>
++      </div>
++
++      <div class="recent-item" *ngFor="let progress of dashboard?.recentProgress ?? []">
++        <div>
++          <strong>{{ progress.topicName }}</strong>
++          <p>{{ progress.remarks }}</p>
++        </div>
++
++        <div class="recent-hours">
++          {{ progress.studiedHours | number:'1.0-2' }}h
++        </div>
++
++        <span class="completed-badge">
++          {{ progress.status }}
++        </span>
++      </div>
++
++      <!-- No Recent Progress -->
++      <div *ngIf="!loading && (!dashboard?.recentProgress || dashboard.recentProgress.length === 0)" class="empty">
++        No recent progress available.
++      </div>
++    </section>
++
++  </main>

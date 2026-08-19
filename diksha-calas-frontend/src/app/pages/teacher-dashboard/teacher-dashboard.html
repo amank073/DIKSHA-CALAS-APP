@@ -1,764 +1,780 @@
-<!-- =========================================================
+<ng-container *ngIf="userProfile?.enabled !== false">
+  <!-- =========================================================
      DASHBOARD HEADER (Merged Topbar & Selector)
 ========================================================= -->
 
-<header class="dashboard-header-card">
+  <header class="dashboard-header-card">
 
-  <!-- TOP ROW -->
-  <div class="header-top-row">
-    <div>
-      <h1>Teacher Dashboard</h1>
-      <p>View and manage your assigned students' study plans</p>
+    <!-- TOP ROW -->
+    <div class="header-top-row">
+      <div>
+        <h1>Teacher Dashboard</h1>
+        <p>View and manage your assigned students' study plans</p>
+      </div>
+
+      <div class="top-actions">
+        <button *ngIf="userProfile" type="button" class="profile-circle-btn" (click)="toggleProfileModal()">
+          {{ userProfile.firstName?.charAt(0) }}{{ userProfile.lastName?.charAt(0) }}
+        </button>
+      </div>
     </div>
 
-    <div class="top-actions">
-      <button
-        *ngIf="userProfile"
-        type="button"
-        class="profile-circle-btn"
-        (click)="toggleProfileModal()"
-      >
-        {{ userProfile.firstName?.charAt(0) }}{{ userProfile.lastName?.charAt(0) }}
+    <!-- DIVIDER -->
+    <hr class="header-divider" *ngIf="!loading && students.length">
+
+    <!-- BOTTOM ROW: STUDENT SELECTOR -->
+    <div class="header-bottom-row" *ngIf="!loading && students.length">
+      <label style="margin: 0;">
+        Student ({{ students.length }})
+
+        <select [(ngModel)]="selectedStudentId" (ngModelChange)="onStudentChange()">
+          <option *ngFor="let student of students" [ngValue]="student.studentId">
+            {{ student.studentName }} <ng-container *ngIf="student.targetExam">({{ student.targetExam }})</ng-container>
+          </option>
+        </select>
+      </label>
+
+      <button type="button" class="edit-btn" (click)="toggleStudentProfileModal()">
+        View Profile
       </button>
     </div>
-  </div>
 
-  <!-- DIVIDER -->
-  <hr class="header-divider" *ngIf="!loading && students.length">
+    <p class="selector-hint" *ngIf="!loading && students.length === 1">
+      Only students assigned to you appear here. Ask an Admin to assign more
+      students to your account from Admin &rarr; Teachers.
+    </p>
 
-  <!-- BOTTOM ROW: STUDENT SELECTOR -->
-  <div class="header-bottom-row" *ngIf="!loading && students.length">
-    <label style="margin: 0;">
-      Student ({{ students.length }})
+  </header>
 
-      <select
-        [(ngModel)]="selectedStudentId"
-        (ngModelChange)="onStudentChange()"
-      >
-        <option
-          *ngFor="let student of students"
-          [ngValue]="student.studentId"
-        >
-          {{ student.studentName }} <ng-container *ngIf="student.targetExam">({{ student.targetExam }})</ng-container>
-        </option>
-      </select>
-    </label>
-
-    <button type="button" class="edit-btn" (click)="toggleStudentProfileModal()">
-      View Profile
-    </button>
-  </div>
-
-  <p class="selector-hint" *ngIf="!loading && students.length === 1">
-    Only students assigned to you appear here. Ask an Admin to assign more
-    students to your account from Admin &rarr; Teachers.
-  </p>
-
-</header>
-
-<!-- =========================================================
+  <!-- =========================================================
      LOADING
 ========================================================= -->
 
-<div *ngIf="loading" class="message">
-  Loading teacher dashboard...
-</div>
+  <div *ngIf="loading" class="message">
+    Loading teacher dashboard...
+  </div>
 
-<!-- =========================================================
+  <!-- =========================================================
      NO STUDENTS ASSIGNED
 ========================================================= -->
 
-<section
-  *ngIf="!loading && students.length === 0"
-  class="no-students-section"
-  style="text-align: center; padding: 40px; background: white; border-radius: 12px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);"
->
-  <h2 style="color: #172033; margin-bottom: 12px; font-size: 20px;">No Students Assigned</h2>
-  <p style="color: #64748b; font-size: 15px; margin: 0;">
-    You currently have no students assigned to your account. <br>
-    Please contact the admin to get students assigned to you.
-  </p>
-</section>
+  <section *ngIf="!loading && students.length === 0" class="no-students-section"
+    style="text-align: center; padding: 40px; background: white; border-radius: 12px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <h2 style="color: #172033; margin-bottom: 12px; font-size: 20px;">No Students Assigned</h2>
+    <p style="color: #64748b; font-size: 15px; margin: 0;">
+      You currently have no students assigned to your account. <br>
+      Please contact the admin to get students assigned to you.
+    </p>
+  </section>
 
 
-<!-- =========================================================
+  <!-- =========================================================
      ERROR / SUCCESS MESSAGES
 ========================================================= -->
 
-<div
-  *ngIf="errorMessage"
-  class="alert error"
->
-  {{ errorMessage }}
-</div>
+  <div *ngIf="errorMessage" class="alert error">
+    {{ errorMessage }}
+  </div>
 
-<div
-  *ngIf="successMessage"
-  class="alert success"
->
-  {{ successMessage }}
-</div>
+  <div *ngIf="successMessage" class="alert success">
+    {{ successMessage }}
+  </div>
 
 
-<!-- =========================================================
+  <!-- =========================================================
      STUDY PLAN
 ========================================================= -->
 
-<section
-  *ngIf="!loading && plan"
->
+  <section *ngIf="!loading && plan">
 
-  <!-- =======================================================
+    <!-- =======================================================
        PROGRESS SUMMARY
   ======================================================== -->
 
-  <section
-    *ngIf="progress?.summary"
-    style="margin-bottom: 25px; max-width: 1250px; margin-left: auto; margin-right: auto;"
-  >
-    <h2 style="color: #172033; font-size: 22px; margin: 0 0 16px 0;">
-      Student Progress
-    </h2>
-    <div class="progress-summary" style="margin: 0;">
-      <div>
-        <strong>
-          {{ progress.summary.completionPercentage | number:'1.0-2' }}%
-        </strong>
-
-        <span>
-          Plan completion
-        </span>
-      </div>
-
-
-      <div>
-        <strong>
-          {{ progress.summary.studiedHours }}h
-        </strong>
-
-        <span>
-          Studied
-        </span>
-      </div>
-
-
-      <div>
-        <strong>
-          {{ progress.summary.completedSchedules }}/{{ progress.summary.totalSchedules }}
-        </strong>
-
-        <span>
-          Schedules completed
-        </span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Student Header -->
-
-  <div class="student-header">
-
-    <div>
-      <h2>
-        Student Study Plan
+    <section *ngIf="progress?.summary"
+      style="margin-bottom: 25px; max-width: 1250px; margin-left: auto; margin-right: auto;">
+      <h2 style="color: #172033; font-size: 22px; margin: 0 0 16px 0;">
+        Student Progress
       </h2>
+      <div class="progress-summary" style="margin: 0;">
+        <div>
+          <strong>
+            {{ progress.summary.completionPercentage | number:'1.0-2' }}%
+          </strong>
 
-      <p>
-        {{ plan.variant }}
-        · {{ plan.startDate }}
-        → {{ plan.endDate }}
-      </p>
-    </div>
-
-    <div class="daily-hours">
-      {{ plan.dailyStudyHours }}h
-
-      <span>
-        per day
-      </span>
-    </div>
-
-  </div>
-
-
-  <!-- =======================================================
-       WEEKLY SCHEDULE
-  ======================================================== -->
-
-  <section class="schedule-section">
-
-    <div class="section-title">
-
-      <div>
-        <h2>
-          Weekly Schedule
-        </h2>
-
-        <p>
-          Edit any schedule item to manually override the plan.
-        </p>
-      </div>
-
-      <span class="count">
-        {{ schedule.length }} items
-      </span>
-
-    </div>
-
-
-    <!-- Schedule Items -->
-
-    <div
-      class="schedule-item"
-      *ngFor="let item of schedule"
-    >
-
-      <!-- Date -->
-
-      <div class="date-box">
-
-        <strong>
-          {{ item.scheduledDate }}
-        </strong>
-
-        <small>
-          Week {{ item.weekNumber }}
-        </small>
-
-      </div>
-
-
-      <!-- Schedule Content -->
-
-      <div class="schedule-content">
-
-        <div class="subject">
-          {{ cleanSubjectName(item.subjectName) }}
+          <span>
+            Plan completion
+          </span>
         </div>
 
 
-        <h3>
-          {{ item.topicName || 'No Topic' }}
-        </h3>
+        <div>
+          <strong>
+            {{ progress.summary.studiedHours | number:'1.0-2' }}h
+          </strong>
 
-
-        <!-- Test -->
-
-        <p *ngIf="item.testTitle">
-
-          📝 {{ item.testTitle }}
-
-          <span *ngIf="item.testType">
-            · {{ item.testType }}
+          <span>
+            Studied
           </span>
-
-        </p>
-
-
-        <!-- Video -->
-
-        <p *ngIf="item.videoTitle">
-          <button
-            type="button"
-            *ngIf="item.videoUrl; else videoTextOnly"
-            (click)="openVideo(item)"
-            class="resource-link video-link"
-            style="border: none; background: none; font: inherit; cursor: pointer; padding: 0;"
-          >
-            ▶ {{ item.videoTitle }}
-          </button>
-          <ng-template #videoTextOnly>▶ {{ item.videoTitle }}</ng-template>
-        </p>
+        </div>
 
 
-        <!-- Practice -->
+        <div>
+          <strong>
+            {{ progress.summary.completedSchedules }}/{{ progress.summary.totalSchedules }}
+          </strong>
 
-        <p *ngIf="item.practiceTitle">
-
-          <a
-            *ngIf="item.practiceLink; else practiceTextOnly"
-            [href]="item.practiceLink"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="resource-link"
-          >
-            ✏ {{ item.practiceTitle }}
-          </a>
-          <ng-template #practiceTextOnly>✏ {{ item.practiceTitle }}</ng-template>
-
-          <span *ngIf="item.practiceQuestionCount">
-            · {{ item.practiceQuestionCount }} questions
+          <span>
+            Schedules completed
           </span>
-
-        </p>
-
+        </div>
       </div>
+    </section>
 
+    <!-- Student Header -->
 
-      <!-- Planned Hours -->
-
-      <div class="hours">
-        {{ item.plannedHours }}h
-      </div>
-
-
-      <!-- Status -->
+    <div class="student-header">
 
       <div>
+        <h2>
+          Student Study Plan
+        </h2>
 
-        <span
-          class="badge"
-          [class.manual]="item.manualOverride"
-        >
+        <p>
+          {{ plan.variant }}
+          · {{ plan.startDate }}
+          → {{ plan.endDate }}
+        </p>
+      </div>
 
-          {{
-            item.manualOverride
-              ? 'Manual Override'
-              : 'Auto Planned'
-          }}
+      <div style="display: flex; align-items: center; gap: 24px;">
+        <div class="daily-hours" style="margin: 0;">
+          {{ plan.dailyStudyHours }}h
 
-        </span>
+          <span>
+            per day
+          </span>
+        </div>
+
+        <button type="button" (click)="toggleGenerateForm()"
+          style="border: 2px solid #2563eb; background: #ffffff; color: #2563eb; padding: 10px 24px; border-radius: 50px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;"
+          onmouseover="this.style.background='#2563eb'; this.style.color='#ffffff';"
+          onmouseout="this.style.background='#ffffff'; this.style.color='#2563eb';">
+          Regenerate Plan
+        </button>
+      </div>
+
+    </div>
+
+    <!-- =========================================================
+       REGENERATE PLAN MODAL
+  ========================================================= -->
+
+    <div *ngIf="showGenerateForm" class="modal-overlay" (click)="toggleGenerateForm()"></div>
+
+    <div *ngIf="showGenerateForm" class="modal" style="width: min(600px, calc(100% - 30px));">
+      <div class="modal-header">
+        <div>
+          <h2>Regenerate Study Plan</h2>
+          <p>Adjust the parameters to create a new plan</p>
+        </div>
+        <button type="button" class="close-btn" (click)="toggleGenerateForm()">×</button>
+      </div>
+
+      <form class="edit-form" (ngSubmit)="generatePlan()">
+        <div class="form-grid">
+          <label>
+            Exam Type
+            <input type="text" name="regenExamType" [(ngModel)]="generateForm.examType" readonly
+              style="background-color: #f8fafc; cursor: not-allowed; border-color: #e2e8f0; color: #64748b; pointer-events: none;" />
+          </label>
+
+          <label>
+            Plan Variant
+            <select [(ngModel)]="generateForm.variant" name="regenVariant">
+              <option value="MONTH_24">24 Month</option>
+              <option value="MONTH_12">12 Month</option>
+              <option value="DROPPER_12">Dropper (12 Month)</option>
+            </select>
+          </label>
+
+          <label>
+            Start Date
+            <input type="date" name="regenStartDate" [(ngModel)]="generateForm.startDate" />
+          </label>
+
+          <label>
+            End Date
+            <input type="date" name="regenEndDate" [(ngModel)]="generateForm.endDate" />
+          </label>
+
+          <label>
+            Daily Study Hours
+            <input type="number" min="0.5" step="0.5" name="regenHours" [(ngModel)]="generateForm.dailyStudyHours" />
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="toggleGenerateForm()">Cancel</button>
+          <button type="submit" class="save-btn" [disabled]="generating">
+            {{ generating ? 'Regenerating...' : 'Generate New Plan' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+
+
+
+    <!-- =======================================================
+       WEEKLY SCHEDULE
+  ======================================================== -->
+
+    <section class="schedule-section">
+
+      <div class="section-title" (click)="toggleWeeklySchedule()"
+        [style.padding-bottom.px]="isWeeklyScheduleExpanded ? 20 : 0"
+        [style.margin-bottom.px]="isWeeklyScheduleExpanded ? 20 : 0"
+        [style.border-bottom]="isWeeklyScheduleExpanded ? '1px solid #e2e8f0' : 'none'"
+        style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: opacity 0.2s ease;"
+        onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
+
+        <div>
+          <h2 style="margin: 0 0 4px; font-size: 20px;">
+            Weekly Schedule
+          </h2>
+          <p style="margin: 0; color: #64748b; font-size: 14px;">
+            Edit any schedule item to manually override the plan.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 15px; align-items: center;">
+          <span class="count">
+            {{ schedule.length }} items
+          </span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" style="color: #64748b; transition: transform 0.3s ease;"
+            [style.transform]="isWeeklyScheduleExpanded ? 'rotate(180deg)' : 'rotate(0deg)'">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
 
       </div>
 
 
-      <!-- Edit -->
+      <!-- Schedule Items -->
+      <ng-container *ngIf="isWeeklyScheduleExpanded">
+        <div class="schedule-scroll-container">
+          <div class="schedule-item" *ngFor="let item of schedule">
 
-      <button
-        type="button"
-        class="edit-btn"
-        (click)="editSchedule(item)"
-      >
-        Edit
-      </button>
+            <!-- Date -->
 
-    </div>
+            <div class="date-box">
+
+              <strong>
+                {{ item.scheduledDate }}
+              </strong>
+
+              <small>
+                Week {{ item.weekNumber }}
+              </small>
+
+            </div>
+
+
+            <!-- Schedule Content -->
+
+            <div class="schedule-content">
+
+              <div class="subject">
+                {{ cleanSubjectName(item.subjectName) }}
+              </div>
+
+
+              <h3>
+                {{ item.topicName || 'No Topic' }}
+              </h3>
+
+
+              <!-- Test -->
+
+              <p *ngIf="item.testTitle">
+
+                📝 {{ item.testTitle }}
+
+                <span *ngIf="item.testType">
+                  · {{ item.testType }}
+                </span>
+
+              </p>
+
+
+              <!-- Video and Practice Container -->
+              <div class="action-buttons-container" style="display: flex; gap: 30px; margin-top: 10px; align-items: center;">
+                <ng-container *ngIf="item.videoTitle">
+                  <button type="button" *ngIf="item.videoUrl; else videoTextOnly" (click)="openVideo(item)"
+                    class="resource-link video-link square-btn"
+                    style="border: none; cursor: pointer;">
+                    ▶ Watch Video
+                  </button>
+                  <ng-template #videoTextOnly>▶ Watch Video</ng-template>
+                </ng-container>
+
+                <ng-container *ngIf="item.practiceTitle">
+                  <a *ngIf="item.practiceLink; else practiceTextOnly" [href]="item.practiceLink" target="_blank"
+                    rel="noopener noreferrer" class="resource-link practice-link square-btn">
+                    ✏ DPP Practice
+                  </a>
+                  <ng-template #practiceTextOnly>✏ DPP Practice</ng-template>
+                </ng-container>
+              </div>
+
+            </div>
+
+
+            <!-- Planned Hours -->
+
+            <div class="hours">
+              {{ item.plannedHours }}h
+            </div>
+
+
+            <!-- Status -->
+
+            <div>
+
+              <span class="badge" [class.manual]="item.manualOverride">
+
+                {{
+                item.manualOverride
+                ? 'Manual Override'
+                : 'Auto Planned'
+                }}
+
+              </span>
+
+            </div>
+
+
+            <!-- Edit -->
+
+            <button type="button" class="edit-btn" (click)="editSchedule(item)">
+              Edit
+            </button>
+
+          </div>
+        </div>
+      </ng-container>
+
+    </section>
+
+    <!-- =======================================================
+       FULL MICRO PLAN (MONTH VIEW)
+  ======================================================== -->
+    <section *ngIf="plan" style="max-width: 1250px; margin: 0 auto 50px;">
+      <div class="plan-card full-plan-block"
+        style="background: #ffffff; border-radius: 20px; padding: 28px; border: 1px solid rgba(226, 232, 240, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), 0 1px 4px rgba(0,0,0,0.02);">
+
+        <div class="section-title" (click)="toggleMonthlySchedule()"
+          [style.padding-bottom.px]="isMonthlyScheduleExpanded ? 20 : 0"
+          [style.margin-bottom.px]="isMonthlyScheduleExpanded ? 20 : 0"
+          [style.border-bottom]="isMonthlyScheduleExpanded ? '1px solid #e2e8f0' : 'none'"
+          style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: opacity 0.2s ease;"
+          onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
+
+          <div>
+            <h2 style="margin: 0 0 4px; font-size: 20px;">
+              Monthly Schedule
+            </h2>
+            <p style="margin: 0; color: #64748b; font-size: 14px;">
+              Full day-by-day learning plan.
+            </p>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <svg [style.transform]="isMonthlyScheduleExpanded ? 'rotate(180deg)' : 'rotate(0)'"
+              style="transition: transform 0.3s ease; width: 20px; height: 20px; color: #64748b;" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+        </div>
+
+        <ng-container *ngIf="isMonthlyScheduleExpanded">
+          <div class="month-nav">
+            <button type="button" (click)="goToPrevMonth()" [disabled]="currentMonthOffset === 0">← Prev</button>
+            <h3 class="full-plan-block-title">{{ currentMonthLabel }}</h3>
+            <button type="button" (click)="goToNextMonth()"
+              [disabled]="currentMonthOffset >= availableMonths.length - 1">Next →</button>
+          </div>
+
+          <p class="empty-note" *ngIf="currentMonthSchedules.length === 0">No schedule rows this month.</p>
+
+          <div class="month-day-list" *ngIf="currentMonthSchedules.length > 0">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Subject</th>
+                  <th>Activity</th>
+                  <th>Planned Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of currentMonthSchedules">
+                  <td class="date-col"><span class="month-day-date">{{ item.scheduledDate }}</span></td>
+                  <td class="subject-col">
+                    <span class="month-day-subject" *ngIf="item.subjectName">{{ cleanSubjectName(item.subjectName)
+                      }}</span>
+                    <span class="dash" *ngIf="!item.subjectName">—</span>
+                  </td>
+                  <td class="activity-col">
+                    <span class="month-day-test" *ngIf="item.testType && item.testType !== 'study'">
+                      {{ item.testType === 'subject_wise' ? 'Subject Test' : 'Topic Test' }}
+                      <em *ngIf="!item.testId">(pending)</em>
+                    </span>
+                    <span class="month-day-study" *ngIf="!item.testType || item.testType === 'study'">
+                      Study Session
+                    </span>
+                  </td>
+                  <td class="time-col"><span class="month-day-hours">{{ item.plannedHours | number:'1.0-2' }}h</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+
+      </div>
+    </section>
+
+    <!-- =======================================================
+       MACRO PLAN PHASES
+  ======================================================== -->
+    <section *ngIf="plan"
+      style="margin-bottom: 25px; max-width: 1250px; margin-left: auto; margin-right: auto; width: 100%;">
+      <div
+        style="background: #ffffff; border-radius: 20px; padding: 28px; border: 1px solid rgba(226, 232, 240, 0.6); display: flex; align-items: center; gap: 30px; justify-content: space-between; margin-bottom: 30px; width: 100%;">
+        <h3 style="flex-shrink: 0; margin: 0; width: 220px; font-size: 20px; font-weight: 700; color: #172033;">Macro
+          Plan Phases</h3>
+        <app-phase-timeline style="flex-grow: 1; overflow: hidden;"
+          [phaseBreakdownJson]="plan.phaseBreakdown"></app-phase-timeline>
+      </div>
+    </section>
 
   </section>
 
-</section>
 
-
-<!-- =========================================================
+  <!-- =========================================================
      NO ACTIVE PLAN — GENERATE ONE
 ========================================================= -->
 
-<section
-  *ngIf="!loading && noPlanFound"
-  class="no-plan-section"
->
+  <section *ngIf="!loading && noPlanFound" class="no-plan-section">
 
-  <div class="section-title">
-    <div>
-      <h2>No Active Study Plan</h2>
-      <p>This student doesn't have an active study plan yet.</p>
-    </div>
+    <div class="section-title">
+      <div>
+        <h2>No Active Study Plan</h2>
+        <p>This student doesn't have an active study plan yet.</p>
+      </div>
 
-    <button
-      type="button"
-      class="edit-btn"
-      (click)="toggleGenerateForm()"
-    >
-      {{ showGenerateForm ? 'Cancel' : 'Generate Plan' }}
-    </button>
-  </div>
-
-  <form
-    class="edit-form"
-    *ngIf="showGenerateForm"
-    (ngSubmit)="generatePlan()"
-  >
-
-    <div class="form-grid">
-
-      <label>
-        Exam Type
-        <select [(ngModel)]="generateForm.examType" name="genExamType">
-          <option value="JEE">JEE</option>
-          <option value="NEET">NEET</option>
-        </select>
-      </label>
-
-      <label>
-        Plan Variant
-        <select [(ngModel)]="generateForm.variant" name="genVariant">
-          <option value="MONTH_24">24 Month</option>
-          <option value="MONTH_12">12 Month</option>
-          <option value="DROPPER_12">Dropper (12 Month)</option>
-        </select>
-      </label>
-
-      <label>
-        Start Date
-        <input type="date" name="genStartDate" [(ngModel)]="generateForm.startDate" />
-      </label>
-
-      <label>
-        End Date
-        <input type="date" name="genEndDate" [(ngModel)]="generateForm.endDate" />
-      </label>
-
-      <label>
-        Daily Study Hours
-        <input type="number" min="0.5" step="0.5" name="genHours" [(ngModel)]="generateForm.dailyStudyHours" />
-      </label>
-
-    </div>
-
-    <div class="modal-actions">
-      <button type="submit" class="save-btn" [disabled]="generating">
-        {{ generating ? 'Generating...' : 'Generate Study Plan' }}
+      <button type="button" class="edit-btn" (click)="toggleGenerateForm()">
+        {{ showGenerateForm ? 'Cancel' : 'Generate Plan' }}
       </button>
     </div>
 
-  </form>
+    <form class="edit-form" *ngIf="showGenerateForm" (ngSubmit)="generatePlan()">
 
-</section>
+      <div class="form-grid">
+
+        <label>
+          Exam Type
+          <input type="text" name="genExamType" [(ngModel)]="generateForm.examType" readonly
+            style="background-color: #f8fafc; cursor: not-allowed; border-color: #e2e8f0; color: #64748b; pointer-events: none;" />
+        </label>
+
+        <label>
+          Plan Variant
+          <select [(ngModel)]="generateForm.variant" name="genVariant">
+            <option value="MONTH_24">24 Month</option>
+            <option value="MONTH_12">12 Month</option>
+            <option value="DROPPER_12">Dropper (12 Month)</option>
+          </select>
+        </label>
+
+        <label>
+          Start Date
+          <input type="date" name="genStartDate" [(ngModel)]="generateForm.startDate" />
+        </label>
+
+        <label>
+          End Date
+          <input type="date" name="genEndDate" [(ngModel)]="generateForm.endDate" />
+        </label>
+
+        <label>
+          Daily Study Hours
+          <input type="number" min="0.5" step="0.5" name="genHours" [(ngModel)]="generateForm.dailyStudyHours" />
+        </label>
+
+      </div>
+
+      <div class="modal-actions">
+        <button type="submit" class="save-btn" [disabled]="generating">
+          {{ generating ? 'Generating...' : 'Generate Study Plan' }}
+        </button>
+      </div>
+
+    </form>
+
+  </section>
 
 
-<!-- =========================================================
+  <!-- =========================================================
      EDIT SCHEDULE MODAL
 ========================================================= -->
 
-<div
-  *ngIf="editingItem"
-  class="modal-overlay"
-  (click)="cancelEdit()"
-></div>
+  <div *ngIf="editingItem" class="modal-overlay" (click)="cancelEdit()"></div>
 
 
-<div
-  *ngIf="editingItem"
-  class="modal"
->
+  <div *ngIf="editingItem" class="modal">
 
-  <!-- =======================================================
+    <!-- =======================================================
        MODAL HEADER
   ======================================================== -->
 
-  <div class="modal-header">
+    <div class="modal-header">
 
-    <div>
+      <div>
 
-      <h2>
-        Edit Schedule
-      </h2>
+        <h2>
+          Edit Schedule
+        </h2>
 
-      <p>
-        Schedule #{{ editingItem.id }}
-      </p>
+        <p>
+          Schedule #{{ editingItem.id }}
+        </p>
+
+      </div>
+
+
+      <button type="button" class="close-btn" (click)="cancelEdit()">
+        ×
+      </button>
 
     </div>
 
 
-    <button
-      type="button"
-      class="close-btn"
-      (click)="cancelEdit()"
-    >
-      ×
-    </button>
-
-  </div>
-
-
-  <!-- =======================================================
+    <!-- =======================================================
        EDIT FORM
   ======================================================== -->
 
-  <form
-    class="edit-form"
-    (ngSubmit)="saveOverride()"
-  >
+    <form class="edit-form" (ngSubmit)="saveOverride()">
 
-    <div class="form-grid">
+      <div class="form-grid">
 
 
-      <!-- Scheduled Date -->
+        <!-- Scheduled Date -->
 
-      <label>
+        <label>
 
-        Scheduled Date
+          Scheduled Date
 
-        <input
-          type="date"
-          name="scheduledDate"
-          [(ngModel)]="editingItem.scheduledDate"
-          required
-        />
+          <input type="date" name="scheduledDate" [(ngModel)]="editingItem.scheduledDate" required />
 
-      </label>
+        </label>
 
 
-      <!-- Subject -->
+        <!-- Subject -->
 
-      <label>
+        <label>
 
-        Subject
+          Subject
 
-        <input
-          type="text"
-          name="subjectName"
-          [ngModel]="cleanSubjectName(editingItem.subjectName)"
-          (ngModelChange)="editingItem.subjectName = $event"
-          readonly
-          placeholder="Subject"
-        />
+          <input type="text" name="subjectName" [ngModel]="cleanSubjectName(editingItem.subjectName)"
+            (ngModelChange)="editingItem.subjectName = $event" readonly placeholder="Subject" />
 
-      </label>
+        </label>
 
 
-      <!-- Topic ID -->
+        <!-- Topic ID -->
 
-      <label>
+        <label>
 
-        Topic ID
+          Topic ID
 
-        <input
-          type="number"
-          name="topicId"
-          [(ngModel)]="editingItem.topicId"
-          min="1"
-        />
+          <input type="number" name="topicId" [(ngModel)]="editingItem.topicId" min="1" />
 
-      </label>
+        </label>
 
 
-      <!-- Resource ID -->
+        <!-- Resource ID -->
 
-      <label>
+        <label>
 
-        Resource ID
+          Resource ID
 
-        <input
-          type="number"
-          name="resourceId"
-          [(ngModel)]="editingItem.resourceId"
-          min="1"
-        />
+          <input type="number" name="resourceId" [(ngModel)]="editingItem.resourceId" min="1" />
 
-      </label>
+        </label>
 
 
-      <!-- Test ID -->
+        <!-- Test ID -->
 
-      <label>
+        <label>
 
-        Test ID
+          Test ID
 
-        <input
-          type="number"
-          name="testId"
-          [(ngModel)]="editingItem.testId"
-          min="1"
-        />
+          <input type="number" name="testId" [(ngModel)]="editingItem.testId" min="1" />
 
-      </label>
+        </label>
 
 
-      <!-- Planned Hours -->
+        <!-- Planned Hours -->
 
-      <label>
+        <label>
 
-        Planned Hours
+          Planned Hours
 
-        <input
-          type="number"
-          name="plannedHours"
-          [(ngModel)]="editingItem.plannedHours"
-          min="0"
-          step="0.1"
-          required
-        />
+          <input type="number" name="plannedHours" [(ngModel)]="editingItem.plannedHours" min="0" step="0.1" required />
 
-      </label>
+        </label>
 
 
-      <!-- Week Number -->
+        <!-- Week Number -->
 
-      <label>
+        <label>
 
-        Week Number
+          Week Number
 
-        <input
-          type="number"
-          name="weekNumber"
-          [(ngModel)]="editingItem.weekNumber"
-          min="1"
-        />
+          <input type="number" name="weekNumber" [(ngModel)]="editingItem.weekNumber" min="1" />
 
-      </label>
+        </label>
 
 
-      <!-- Test Type -->
+        <!-- Test Type -->
 
-      <label>
+        <label>
 
-        Test Type
+          Test Type
 
-        <input
-          type="text"
-          name="testType"
-          [(ngModel)]="editingItem.testType"
-          placeholder="topic_wise / subject_wise"
-        />
+          <input type="text" name="testType" [(ngModel)]="editingItem.testType"
+            placeholder="topic_wise / subject_wise" />
 
-      </label>
+        </label>
 
 
-      <!-- Video Title -->
+        <!-- Video Title -->
 
-      <label>
+        <label>
 
-        Video Title
+          Video Title
 
-        <input
-          type="text"
-          name="videoTitle"
-          [(ngModel)]="editingItem.videoTitle"
-          placeholder="Video title"
-        />
+          <input type="text" name="videoTitle" [(ngModel)]="editingItem.videoTitle" placeholder="Video title" />
 
-      </label>
+        </label>
 
-    </div>
+      </div>
 
 
-    <!-- =====================================================
+      <!-- =====================================================
          VIDEO URL
     ====================================================== -->
 
-    <label>
+      <label>
 
-      Video URL
+        Video URL
 
-      <input
-        type="url"
-        name="videoUrl"
-        [(ngModel)]="editingItem.videoUrl"
-        placeholder="https://..."
-      />
+        <input type="url" name="videoUrl" [(ngModel)]="editingItem.videoUrl" placeholder="https://..." />
 
-    </label>
+      </label>
 
 
-    <!-- =====================================================
+      <!-- =====================================================
          PRACTICE TITLE
     ====================================================== -->
 
-    <label>
+      <label>
 
-      Practice Title
+        Practice Title
 
-      <input
-        type="text"
-        name="practiceTitle"
-        [(ngModel)]="editingItem.practiceTitle"
-        placeholder="Practice questions"
-      />
+        <input type="text" name="practiceTitle" [(ngModel)]="editingItem.practiceTitle"
+          placeholder="Practice questions" />
 
-    </label>
+      </label>
 
 
-    <!-- =====================================================
+      <!-- =====================================================
          PRACTICE LINK
     ====================================================== -->
 
-    <label>
+      <label>
 
-      Practice Link
+        Practice Link
 
-      <input
-        type="url"
-        name="practiceLink"
-        [(ngModel)]="editingItem.practiceLink"
-        placeholder="https://..."
-      />
+        <input type="url" name="practiceLink" [(ngModel)]="editingItem.practiceLink" placeholder="https://..." />
 
-    </label>
+      </label>
 
 
-    <!-- =====================================================
+      <!-- =====================================================
          PRACTICE QUESTIONS
     ====================================================== -->
 
-    <label>
+      <label>
 
-      Practice Questions
+        Practice Questions
 
-      <input
-        type="number"
-        name="practiceQuestionCount"
-        [(ngModel)]="editingItem.practiceQuestionCount"
-        min="0"
-      />
+        <input type="number" name="practiceQuestionCount" [(ngModel)]="editingItem.practiceQuestionCount" min="0" />
 
-    </label>
+      </label>
 
 
-    <!-- =====================================================
+      <!-- =====================================================
          NOTES
     ====================================================== -->
 
-    <label>
+      <label>
 
-      Notes
+        Notes
 
-      <textarea
-        name="notes"
-        [(ngModel)]="editingItem.notes"
-        rows="4"
-        placeholder="Teacher notes..."
-      ></textarea>
+        <textarea name="notes" [(ngModel)]="editingItem.notes" rows="4" placeholder="Teacher notes..."></textarea>
 
-    </label>
+      </label>
 
 
-    <!-- =====================================================
+      <!-- =====================================================
          ACTIONS
     ====================================================== -->
 
-    <div class="modal-actions">
+      <div class="modal-actions">
 
-      <button
-        type="button"
-        class="cancel-btn"
-        (click)="cancelEdit()"
-      >
-        Cancel
-      </button>
+        <button type="button" class="cancel-btn" (click)="cancelEdit()">
+          Cancel
+        </button>
 
 
-      <button
-        type="submit"
-        class="save-btn"
-        [disabled]="saving"
-      >
+        <button type="submit" class="save-btn" [disabled]="saving">
 
-        {{ saving ? 'Saving...' : 'Save Override' }}
+          {{ saving ? 'Saving...' : 'Save Override' }}
 
-      </button>
+        </button>
 
-    </div>
+      </div>
 
-  </form>
+    </form>
 
-</div>
-  <div
-    class="video-modal-backdrop profile-modal-backdrop"
-    *ngIf="showProfileModal"
-    (click)="closeProfileModal()"
-  >
+  </div>
+  <div class="video-modal-backdrop profile-modal-backdrop" *ngIf="showProfileModal" (click)="closeProfileModal()">
     <div class="profile-card modal-profile-card" (click)="$event.stopPropagation()">
       <button class="close-profile-btn" (click)="closeProfileModal()">✕</button>
-      
+
       <div class="profile-header" style="justify-content: center; text-align: center; margin-top: 10px;">
         <div class="profile-details">
           <h2>{{ userProfile?.firstName }} {{ userProfile?.lastName }}</h2>
           <p>{{ userProfile?.email }}</p>
         </div>
       </div>
-      
+
       <div class="profile-info-grid">
         <div class="info-item">
           <span class="info-label">Teacher ID</span>
@@ -775,12 +791,9 @@
       </div>
 
       <div class="profile-modal-actions">
-        <button
-          type="button"
-          class="logout-btn-global"
-          (click)="logout()"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button type="button" class="logout-btn-global" (click)="logout()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -792,100 +805,108 @@
   </div>
 
 
-<!-- =========================================================
+  <!-- =========================================================
      VIDEO MODAL (In-Platform Player)
 ========================================================= -->
 
-<div
-  class="video-modal-backdrop"
-  *ngIf="playingVideo"
-  (click)="closeVideo()"
->
+  <div class="video-modal-backdrop" *ngIf="playingVideo" (click)="closeVideo()">
 
-  <div class="video-modal" (click)="$event.stopPropagation()">
+    <div class="video-modal" (click)="$event.stopPropagation()">
 
-    <div class="video-modal-header">
-      <h3>{{ playingVideo.title }}</h3>
-      <button type="button" class="video-modal-close" (click)="closeVideo()">✕</button>
-    </div>
-
-    <div class="video-modal-body">
-
-      <iframe
-        *ngIf="playingVideo.embedUrl && !playingVideo.isVideoTag"
-        [src]="playingVideo.embedUrl"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen
-      ></iframe>
-
-      <video
-        *ngIf="playingVideo.embedUrl && playingVideo.isVideoTag"
-        [src]="playingVideo.embedUrl"
-        controls
-        autoplay
-        style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px;"
-      ></video>
-
-      <div class="video-fallback" *ngIf="!playingVideo.embedUrl && !isSearchingVideo && !videoSearchError">
-        <p>This topic doesn't have a specific video yet — here's a search instead.</p>
-        <a [href]="playingVideo.originalUrl" target="_blank" rel="noopener noreferrer">
-          Open YouTube search in a new tab →
-        </a>
+      <div class="video-modal-header">
+        <h3>{{ playingVideo.title }}</h3>
+        <button type="button" class="video-modal-close" (click)="closeVideo()">✕</button>
       </div>
 
-      <div class="video-error" *ngIf="videoSearchError" style="color: #dc3545; text-align: center; padding: 20px;">
-        <p>{{ videoSearchError }}</p>
-        <a [href]="playingVideo.originalUrl" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: underline;">
-          Open YouTube search in a new tab instead
-        </a>
-      </div>
+      <div class="video-modal-body">
 
-      <div class="video-loading" *ngIf="!playingVideo.embedUrl && isSearchingVideo">
-        <p>Searching for video using YouTube API...</p>
-        <div class="spinner"></div>
-      </div>
+        <iframe *ngIf="playingVideo.embedUrl && !playingVideo.isVideoTag" [src]="playingVideo.embedUrl" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
 
+        <video *ngIf="playingVideo.embedUrl && playingVideo.isVideoTag" [src]="playingVideo.embedUrl" controls autoplay
+          style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px;"></video>
+
+        <div class="video-fallback" *ngIf="!playingVideo.embedUrl && !isSearchingVideo && !videoSearchError">
+          <p>This topic doesn't have a specific video yet — here's a search instead.</p>
+          <a [href]="playingVideo.originalUrl" target="_blank" rel="noopener noreferrer">
+            Open YouTube search in a new tab →
+          </a>
+        </div>
+
+        <div class="video-error" *ngIf="videoSearchError" style="color: #dc3545; text-align: center; padding: 20px;">
+          <p>{{ videoSearchError }}</p>
+          <a [href]="playingVideo.originalUrl" target="_blank" rel="noopener noreferrer"
+            style="color: #007bff; text-decoration: underline;">
+            Open YouTube search in a new tab instead
+          </a>
+        </div>
+
+        <div class="video-loading" *ngIf="!playingVideo.embedUrl && isSearchingVideo">
+          <p>Searching for video using YouTube API...</p>
+          <div class="spinner"></div>
+        </div>
+
+      </div>
     </div>
   </div>
-</div>
 
-<!-- =========================================================
+  <!-- =========================================================
      STUDENT PROFILE MODAL
 ========================================================= -->
 
-<div
-  class="video-modal-backdrop profile-modal-backdrop"
-  *ngIf="showStudentProfileModal"
-  (click)="closeStudentProfileModal()"
->
-  <div class="profile-card modal-profile-card" (click)="$event.stopPropagation()">
-    <button class="close-profile-btn" (click)="closeStudentProfileModal()">✕</button>
-    
-    <div class="profile-header" style="justify-content: center; text-align: center; margin-top: 10px;">
-      <div class="profile-details">
-        <h2>{{ selectedStudentDetails?.studentName }}</h2>
-        <p>{{ selectedStudentDetails?.email }}</p>
+  <div class="video-modal-backdrop profile-modal-backdrop" *ngIf="showStudentProfileModal"
+    (click)="closeStudentProfileModal()">
+    <div class="profile-card modal-profile-card" (click)="$event.stopPropagation()">
+      <button class="close-profile-btn" (click)="closeStudentProfileModal()">✕</button>
+
+      <div class="profile-header" style="justify-content: center; text-align: center; margin-top: 10px;">
+        <div class="profile-details">
+          <h2>{{ selectedStudentDetails?.studentName }}</h2>
+          <p>{{ selectedStudentDetails?.email }}</p>
+        </div>
       </div>
-    </div>
-    
-    <div class="profile-info-grid">
-      <div class="info-item">
-        <span class="info-label">Student ID</span>
-        <span class="info-value">{{ selectedStudentDetails?.studentId || 'N/A' }}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Phone</span>
-        <span class="info-value">{{ selectedStudentDetails?.phone || 'N/A' }}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Class</span>
-        <span class="info-value">{{ selectedStudentDetails?.currentClass || 'N/A' }}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Target Exam</span>
-        <span class="info-value">{{ selectedStudentDetails?.targetExam || 'N/A' }}</span>
+
+      <div class="profile-info-grid">
+        <div class="info-item">
+          <span class="info-label">Student ID</span>
+          <span class="info-value">{{ selectedStudentDetails?.studentId || 'N/A' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Phone</span>
+          <span class="info-value">{{ selectedStudentDetails?.phone || 'N/A' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Class</span>
+          <span class="info-value">{{ selectedStudentDetails?.currentClass || 'N/A' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Target Exam</span>
+          <span class="info-value">{{ selectedStudentDetails?.targetExam || 'N/A' }}</span>
+        </div>
       </div>
     </div>
   </div>
+
+</ng-container>
+
+<!-- =========================================================
+     DEACTIVATED TEACHER UI
+========================================================= -->
+<div *ngIf="userProfile?.enabled === false" class="deactivated-container">
+  <div class="deactivated-card">
+    <div class="deactivated-icon">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    </div>
+    <h2>Account Deactivated</h2>
+    <p>Please contact the support team</p>
+  </div>
 </div>
+
+<!-- Chat Widget for Teachers -->
+<app-chat-widget (chatToggled)="onChatToggled($event)"></app-chat-widget>

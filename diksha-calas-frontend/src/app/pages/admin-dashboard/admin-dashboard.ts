@@ -10,10 +10,13 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 
+import { FormsModule } from '@angular/forms';
+import { ChatService } from '../../core/services/chat.service';
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css'
 })
@@ -22,6 +25,7 @@ export class AdminDashboardComponent implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private cdr = inject(ChangeDetectorRef);
+  private chatService = inject(ChatService);
 
   students: any[] = [];
   teachers: any[] = [];
@@ -30,6 +34,10 @@ export class AdminDashboardComponent implements OnInit {
   loadingTeachers = true;
 
   errorMessage = '';
+
+  showTeacherAlertModal = false;
+  alertTeacherId: number | null = null;
+  alertMessage = '';
 
   ngOnInit(): void {
 
@@ -128,6 +136,29 @@ export class AdminDashboardComponent implements OnInit {
 
   openStudyPlans(): void {
     this.router.navigate(['/admin/study-plans']);
+  }
+
+  openTeacherAlertModal() {
+    this.showTeacherAlertModal = true;
+    this.alertTeacherId = null;
+    this.alertMessage = '';
+  }
+
+  closeTeacherAlertModal() {
+    this.showTeacherAlertModal = false;
+  }
+
+  sendTeacherAlert() {
+    if (!this.alertTeacherId || !this.alertMessage.trim()) return;
+
+    this.chatService.sendMessage(this.alertTeacherId, this.alertMessage, true).subscribe({
+      next: () => {
+        this.closeTeacherAlertModal();
+      },
+      error: (err: any) => {
+        console.error('Failed to send alert', err);
+      }
+    });
   }
 
   logout(): void {

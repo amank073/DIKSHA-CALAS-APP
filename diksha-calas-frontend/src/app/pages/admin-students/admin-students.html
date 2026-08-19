@@ -120,6 +120,11 @@
                 Assign Teacher
               </button>
 
+              <!-- SEND ALERT -->
+              <button type="button" class="alert-btn" (click)="openAlertModal(student)">
+                Send Alert
+              </button>
+
               <!-- DELETE -->
               <button type="button" class="delete-btn" (click)="deleteStudent(student)">
                 Delete
@@ -323,6 +328,35 @@
           <button type="submit" class="teacher-btn assign-btn">Assign Teacher</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirmModal" (click)="closeDeleteConfirmModal()">
+    <div class="modal delete-modal" (click)="$event.stopPropagation()">
+      <h2>Delete Student Permanently?</h2>
+      <p>Are you sure you want to delete {{ studentToDelete?.studentName }}? This action cannot be undone.</p>
+
+      <div class="modal-actions">
+        <button type="button" class="secondary-btn" (click)="closeDeleteConfirmModal()">Cancel</button>
+        <button type="button" class="delete-btn" (click)="confirmDeleteStudent()">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Send Alert Modal -->
+<div class="modal-overlay" *ngIf="showAlertModal" (click)="closeAlertModal()">
+  <div class="modal alert-modal" (click)="$event.stopPropagation()">
+    <h2>Send Alert to {{ selectedAlertStudent?.studentName }}</h2>
+    <div class="form-group" style="margin-top: 15px;">
+      <textarea [(ngModel)]="alertMessage" class="form-control" rows="5"
+        placeholder="Enter alert message..." style="width: 100%; box-sizing: border-box;"></textarea>
+    </div>
+    <div class="modal-actions" style="margin-top: 25px; display: flex; gap: 15px; justify-content: flex-end;">
+      <button type="button" class="secondary-btn" (click)="closeAlertModal()">Cancel</button>
+      <button type="button" class="secondary-btn" (click)="sendAlert()"
+        [disabled]="!alertMessage.trim()">Send</button>
     </div>
   </div>
 </div>

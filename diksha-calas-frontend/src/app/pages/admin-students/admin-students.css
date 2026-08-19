@@ -353,37 +353,16 @@ tbody tr:hover {
   transition: 0.2s ease;
 }
 
-/* VIEW */
+/* UNIFIED BUTTON DESIGN (View, Edit, Assign Teacher, Send Alert) */
 
-.view-btn {
+.view-btn, .edit-btn, .teacher-btn, .alert-btn {
   background: #f1f5f9;
   color: #334155;
+  font-weight: 500;
 }
 
-.view-btn:hover {
+.view-btn:hover, .edit-btn:hover, .teacher-btn:hover, .alert-btn:hover {
   background: #e2e8f0;
-}
-
-/* EDIT */
-
-.edit-btn {
-  background: #eef2ff;
-  color: #4338ca;
-}
-
-.edit-btn:hover {
-  background: #e0e7ff;
-}
-
-/* TEACHER */
-
-.teacher-btn {
-  background: #e5f6ee;
-  color: #18794e;
-}
-
-.teacher-btn:hover {
-  background: #d3f0e1;
 }
 
 /* =====================================================
@@ -416,6 +395,11 @@ tbody tr:hover {
   box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
   overflow: hidden;
   animation: modalIn 0.18s ease-out;
+}
+
+.alert-modal {
+  max-width: 450px;
+  padding: 30px;
 }
 
 @keyframes modalIn {
@@ -710,4 +694,71 @@ tbody tr:hover {
 
 .delete-btn:hover {
   background: #b91c1c;
+}
+.delete-modal {
+  padding: 30px;
+  text-align: center;
+}
+
+.delete-modal h2 {
+  color: #b91c1c;
+  margin-top: 0;
+  margin-bottom: 15px;
+  border: none;
+}
+
+.delete-modal p {
+  color: #4b5563;
+  margin-bottom: 24px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* Modal Primary/Secondary Buttons */
+.primary-btn {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.primary-btn:hover {
+  background-color: #1d4ed8;
+  opacity: 0.9;
+}
+
+.primary-btn:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.secondary-btn {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  min-width: 100px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background-color: #e2e8f0;
+}
+
+.secondary-btn:disabled {
+  cursor: not-allowed;
 }

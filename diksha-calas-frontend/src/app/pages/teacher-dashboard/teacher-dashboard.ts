@@ -1,20 +1,23 @@
 import { API_ORIGIN, API_BASE_URL } from '../../core/config/api-config';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
+import { PhaseTimelineComponent } from '../../shared/components/phase-timeline/phase-timeline';
+import { ChatWidgetComponent } from '../../shared/components/chat-widget/chat-widget.component';
 
 @Component({
   selector: 'app-teacher-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PhaseTimelineComponent, ChatWidgetComponent],
   templateUrl: './teacher-dashboard.html',
   styleUrl: './teacher-dashboard.css',
 })
 export class TeacherDashboardComponent implements OnInit {
+  @ViewChild(ChatWidgetComponent) chatWidget!: ChatWidgetComponent;
   private apiUrl = API_ORIGIN;
 
   students: any[] = [];
@@ -48,6 +51,9 @@ export class TeacherDashboardComponent implements OnInit {
   showProfileModal = false;
   showStudentProfileModal = false;
 
+  isWeeklyScheduleExpanded = false;
+  isMonthlyScheduleExpanded = false;
+
   get selectedStudentDetails() {
     return this.students.find(s => s.studentId === this.selectedStudentId);
   }
@@ -63,8 +69,26 @@ export class TeacherDashboardComponent implements OnInit {
   isSearchingVideo = false;
   videoSearchError = '';
 
+  toggleWeeklySchedule(): void {
+    this.isWeeklyScheduleExpanded = !this.isWeeklyScheduleExpanded;
+  }
+
+  toggleMonthlySchedule(): void {
+    this.isMonthlyScheduleExpanded = !this.isMonthlyScheduleExpanded;
+  }
+
   toggleProfileModal(): void {
     this.showProfileModal = !this.showProfileModal;
+    if (this.showProfileModal && this.chatWidget) {
+      this.chatWidget.closeChat();
+    }
+  }
+
+  onChatToggled(isOpen: boolean): void {
+    if (isOpen) {
+      this.showProfileModal = false;
+      this.showStudentProfileModal = false;
+    }
   }
 
   closeProfileModal(): void {
@@ -511,6 +535,12 @@ export class TeacherDashboardComponent implements OnInit {
   toggleGenerateForm(): void {
     this.showGenerateForm = !this.showGenerateForm;
     this.errorMessage = '';
+    if (this.showGenerateForm) {
+      const exam = this.selectedStudentDetails?.targetExam;
+      if (exam === 'JEE' || exam === 'NEET') {
+        this.generateForm.examType = exam;
+      }
+    }
   }
 
   generatePlan(): void {
@@ -560,5 +590,53 @@ export class TeacherDashboardComponent implements OnInit {
           this.cdr.detectChanges();
         },
       });
+  }
+
+  // =========================
+  // MONTH-BY-MONTH NAVIGATION
+  // =========================
+
+  currentMonthOffset = 0;
+
+  get allSchedules(): any[] {
+    return this.plan?.schedules || [];
+  }
+
+  get availableMonths(): string[] {
+    const keys = new Set<string>();
+    for (const s of this.allSchedules) {
+      if (s.scheduledDate) {
+        keys.add(s.scheduledDate.slice(0, 7));
+      }
+    }
+    return Array.from(keys).sort();
+  }
+
+  get currentMonthKey(): string | null {
+    const months = this.availableMonths;
+    if (months.length === 0) return null;
+    const idx = Math.min(Math.max(this.currentMonthOffset, 0), months.length - 1);
+    return months[idx];
+  }
+
+  get currentMonthLabel(): string {
+    if (!this.currentMonthKey) return '';
+    const [y, m] = this.currentMonthKey.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  }
+
+  get currentMonthSchedules(): any[] {
+    if (!this.currentMonthKey) return [];
+    return this.allSchedules
+      .filter((s) => s.scheduledDate && s.scheduledDate.slice(0, 7) === this.currentMonthKey)
+      .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate));
+  }
+
+  goToPrevMonth(): void {
+    if (this.currentMonthOffset > 0) this.currentMonthOffset--;
+  }
+
+  goToNextMonth(): void {
+    if (this.currentMonthOffset < this.availableMonths.length - 1) this.currentMonthOffset++;
   }
 }

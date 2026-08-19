@@ -1,0 +1,71 @@
+<!-- Floating Action Button -->
+<div class="chat-fab" (click)="toggleChat()" *ngIf="!isOpen">
+  💬
+</div>
+
+<!-- Chat Window -->
+<div class="chat-window" *ngIf="isOpen">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-info">
+      <span class="back-btn" *ngIf="selectedContact" (click)="selectedContact = null; stopPolling()">←</span>
+      <h3 *ngIf="!selectedContact">Messages</h3>
+      <h3 *ngIf="selectedContact">{{ selectedContact.name }}</h3>
+    </div>
+    <div class="header-actions">
+      <button class="clear-btn" *ngIf="selectedContact" (click)="clearChat()" title="Clear Chat">🗑️</button>
+      <button class="close-btn" (click)="toggleChat()">✕</button>
+    </div>
+  </div>
+
+  <!-- Contacts List (Shown when no contact is selected) -->
+  <div class="contacts-list" *ngIf="!selectedContact">
+    <div class="contact-item" *ngFor="let contact of contacts" (click)="selectContact(contact)">
+      <div class="contact-avatar">{{ contact.name.charAt(0) }}</div>
+      <div class="contact-details">
+        <div class="contact-name">{{ contact.name }}</div>
+        <div class="contact-role">{{ contact.role }}</div>
+      </div>
+    </div>
+    <div class="empty-state" *ngIf="contacts.length === 0">
+      No contacts available.
+    </div>
+  </div>
+
+  <!-- Chat Area (Shown when contact is selected) -->
+  <div class="chat-area" *ngIf="selectedContact">
+    <div class="messages-container" #messagesContainer>
+      <div class="message" *ngFor="let msg of messages" 
+           [ngClass]="{'sent': msg.senderId === currentUser.id, 'received': msg.senderId !== currentUser.id, 'alert-msg': msg.alert}">
+        <div class="message-content">
+          <strong *ngIf="msg.alert" class="alert-badge">⚠️ ALERT</strong>
+          {{ msg.content }}
+        </div>
+        <div class="message-time">{{ msg.timestamp | date:'shortTime' }}</div>
+      </div>
+      <div class="empty-state" *ngIf="messages.length === 0">
+        No messages yet.
+      </div>
+    </div>
+
+    <!-- Input Area (Hide if Student is talking to Admin) -->
+    <div class="input-area" *ngIf="!(currentUser.role === 'STUDENT' && selectedContact.role === 'ADMIN')">
+      <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Type a message...">
+      <button (click)="sendMessage()">Send</button>
+    </div>
+    <div class="input-area disabled-area" *ngIf="currentUser.role === 'STUDENT' && selectedContact.role === 'ADMIN'">
+      <span>Cannot reply to Admin.</span>
+    </div>
+  </div>
+
+  <!-- Clear Chat Confirmation Overlay -->
+  <div class="clear-confirm-overlay" *ngIf="showClearConfirm">
+    <div class="clear-confirm-box">
+      <p>Clear messages?</p>
+      <div class="confirm-actions">
+        <button class="cancel-btn" (click)="cancelClearChat()">Cancel</button>
+        <button class="confirm-btn" (click)="confirmClearChat()">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>

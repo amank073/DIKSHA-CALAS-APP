@@ -52,6 +52,7 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/register",
                                 "/api/public/**",
+                                "/api/student/videos/test",
                                 "/health",
                                 "/error"
                         ).permitAll()

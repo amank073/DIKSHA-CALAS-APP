@@ -58,46 +58,89 @@ public class ContentRecommender {
     private String buildQuery(ContentInput input) {
         String subjectPart = input.subjectName() != null ? input.subjectName() + " " : "";
         String examPart = input.examType() != null ? input.examType() + " " : "";
-        return subjectPart + input.topicName() + " " + examPart + "concept explanation";
+        // Clean up exam part if it has weird parentheses that break search
+        if (examPart.contains("(")) {
+            examPart = examPart.substring(0, examPart.indexOf("(")).trim() + " ";
+        }
+        return subjectPart + input.topicName() + " full lecture -\"one shot\" -oneshot";
     }
 
     private ContentOutput placeholder(ContentInput input) {
         String query = buildQuery(input);
         String searchUrl = "https://www.youtube.com/results?search_query="
                 + URLEncoder.encode(query, StandardCharsets.UTF_8);
-        return new ContentOutput(input.topicName() + " — Concept Walkthrough", searchUrl);
+        return new ContentOutput(input.topicName() + " — Concept Walkthrough", searchUrl, "", "");
+    }
+
+    public List<ContentOutput> recommendList(ContentInput input) {
+        if (isConfigured()) {
+            List<ContentOutput> fromApi = tryYouTubeApiList(input);
+            if (fromApi != null && !fromApi.isEmpty()) {
+                return fromApi;
+            }
+        }
+        return List.of(placeholder(input));
     }
 
     @SuppressWarnings("unchecked")
-    private ContentOutput tryYouTubeApi(ContentInput input) {
+    private List<ContentOutput> tryYouTubeApiList(ContentInput input) {
         try {
             String query = buildQuery(input);
-            String url = "https://www.googleapis.com/youtube/v3/search"
-                    + "?part=snippet&type=video&maxResults=1&order=relevance"
+            // using videoDuration=long to bias towards comprehensive lectures (> 20 mins)
+            String urlStr = "https://www.googleapis.com/youtube/v3/search"
+                    + "?part=snippet&type=video&maxResults=8&order=relevance&videoDuration=long"
                     + "&q=" + URLEncoder.encode(query, StandardCharsets.UTF_8)
                     + "&key=" + youtubeApiKey;
 
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            java.net.URI uri = java.net.URI.create(urlStr);
+            Map<String, Object> response = restTemplate.getForObject(uri, Map.class);
             if (response == null) return null;
 
             List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
             if (items == null || items.isEmpty()) return null;
 
-            Map<String, Object> first = items.get(0);
-            Map<String, Object> id = (Map<String, Object>) first.get("id");
-            Map<String, Object> snippet = (Map<String, Object>) first.get("snippet");
-            if (id == null || snippet == null) return null;
+            List<ContentOutput> results = new java.util.ArrayList<>();
+            for (Map<String, Object> item : items) {
+                Map<String, Object> id = (Map<String, Object>) item.get("id");
+                Map<String, Object> snippet = (Map<String, Object>) item.get("snippet");
+                if (id == null || snippet == null) continue;
 
-            String videoId = (String) id.get("videoId");
-            String title = (String) snippet.get("title");
-            if (videoId == null) return null;
-
-            return new ContentOutput(
-                    title != null ? title : input.topicName(),
-                    "https://www.youtube.com/watch?v=" + videoId
-            );
+                String videoId = (String) id.get("videoId");
+                String title = (String) snippet.get("title");
+                String channelTitle = (String) snippet.get("channelTitle");
+                String thumbnailUrl = "";
+                Map<String, Object> thumbnails = (Map<String, Object>) snippet.get("thumbnails");
+                if (thumbnails != null) {
+                    Map<String, Object> medium = (Map<String, Object>) thumbnails.get("medium");
+                    if (medium != null) {
+                        thumbnailUrl = (String) medium.get("url");
+                    } else {
+                        Map<String, Object> def = (Map<String, Object>) thumbnails.get("default");
+                        if (def != null) {
+                            thumbnailUrl = (String) def.get("url");
+                        }
+                    }
+                }
+                
+                if (videoId != null) {
+                    // HTML unescape title for cleaner display
+                    String cleanTitle = title != null ? title.replace("&quot;", "\"").replace("&#39;", "'").replace("&amp;", "&") : input.topicName();
+                    results.add(new ContentOutput(cleanTitle, "https://www.youtube.com/watch?v=" + videoId, thumbnailUrl, channelTitle != null ? channelTitle : ""));
+                }
+            }
+            return results;
         } catch (Exception e) {
-            return null; // graceful fallback — see recommend()
+            System.err.println("YouTube API failed: " + e.getMessage());
+            return null; // return null to trigger the placeholder fallback
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private ContentOutput tryYouTubeApi(ContentInput input) {
+        List<ContentOutput> list = tryYouTubeApiList(input);
+        if (list != null && !list.isEmpty()) {
+            return list.get(0);
+        }
+        return null;
     }
 }

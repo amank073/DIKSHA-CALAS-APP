@@ -13,6 +13,7 @@ import com.diksha.enums.RoleType;
 import com.diksha.repository.RoleRepository;
 import com.diksha.repository.StudentProfileRepository;
 import com.diksha.repository.UserRepository;
+import com.diksha.repository.DeletedUserRepository;
 import com.diksha.service.AuthService;
 import com.diksha.service.StudyPlanService;
 import com.diksha.dto.StudyPlanRequest;
@@ -28,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final DeletedUserRepository deletedUserRepository;
     private final RoleRepository roleRepository;
     private final StudentProfileRepository studentProfileRepository;
     private final PasswordEncoder passwordEncoder;
@@ -42,7 +44,8 @@ public class AuthServiceImpl implements AuthService {
                            JwtService jwtService,
                            StudyPlanService studyPlanService,
                            com.diksha.repository.StudyPlanRepository studyPlanRepository,
-                           com.diksha.repository.TeacherProfileRepository teacherProfileRepository) {
+                           com.diksha.repository.TeacherProfileRepository teacherProfileRepository,
+                           DeletedUserRepository deletedUserRepository) {
 
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -52,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
         this.studyPlanService = studyPlanService;
         this.studyPlanRepository = studyPlanRepository;
         this.teacherProfileRepository = teacherProfileRepository;
+        this.deletedUserRepository = deletedUserRepository;
     }
 
     @Override
@@ -167,21 +171,24 @@ public class AuthServiceImpl implements AuthService {
                 user.getRole() == null ? null : user.getRole().getName(),
                 currentClass,
                 subjectSpecialization,
-                targetExam
+                targetExam,
+                user.getEnabled()
         );
     }
 
     @Override
     public AuthResponse login(LoginRequest request) {
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Signup first"));
-
-        if (Boolean.FALSE.equals(user.getEnabled())) {
-            throw new RuntimeException("contact to the admin");
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null) {
+            if (deletedUserRepository.existsByEmail(request.getEmail())) {
+                throw new RuntimeException("contact to support team");
+            } else {
+                throw new RuntimeException("signup first");
+            }
         }
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("invalid password");
         }
 

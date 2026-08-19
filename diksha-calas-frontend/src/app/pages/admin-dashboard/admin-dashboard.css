@@ -276,27 +276,32 @@
 }
 
 .overview-item {
-  padding: 25px;
-
-  border-radius: 12px;
-
-  background: #f8fafc;
+  padding: 28px;
+  border-radius: 16px;
+  background: #f8f8f8;
+  display: flex;
+  flex-direction: column;
 }
 
 .overview-item span {
   display: block;
-
-  margin-bottom: 10px;
-
-  color: #64748b;
-
+  margin-bottom: 15px;
+  color: #111827;
+  font-weight: 700;
   font-size: 15px;
 }
 
 .overview-item strong {
-  font-size: 30px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #334155;
+}
 
-  color: #111827;
+.overview-item .manage-btn {
+  width: auto;
+  align-self: center;
+  padding: 10px 20px;
+  margin-top: auto;
 }
 
 
@@ -332,4 +337,99 @@
     align-self: stretch;
   }
 
+}
+
+/* =====================================================
+   MODAL OVERLAY
+===================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  width: 100%;
+  max-width: 450px;
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25);
+  overflow: hidden;
+  animation: modalIn 0.18s ease-out;
+}
+
+.alert-modal {
+  max-width: 450px;
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+.alert-modal h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.secondary-btn {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  min-width: 100px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background-color: #e2e8f0;
+}
+
+.secondary-btn:disabled {
+  cursor: not-allowed;
 }

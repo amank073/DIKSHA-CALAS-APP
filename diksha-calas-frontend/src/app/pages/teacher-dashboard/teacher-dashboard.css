@@ -304,6 +304,11 @@ main {
 .schedule-section {
   max-width: 1250px;
   margin: 30px auto 50px;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), 0 1px 4px rgba(0,0,0,0.02);
 }
 
 .section-title {
@@ -341,30 +346,41 @@ main {
 }
 
 /* =========================================================
+   SCHEDULE SCROLL CONTAINER
+========================================================= */
+
+.schedule-scroll-container {
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 12px;
+}
+
+/* =========================================================
    SCHEDULE CARD
 ========================================================= */
 
 .schedule-item {
-  background: #ffffff;
-  margin-bottom: 14px;
-  padding: 20px 24px;
-
-  border: 1px solid rgba(226, 232, 240, 0.6);
-  border-radius: 16px;
+  padding: 24px 0;
+  border-bottom: 1px solid #e2e8f0;
 
   display: grid;
   grid-template-columns: 120px minmax(250px, 1fr) 70px 145px 75px;
   gap: 20px;
   align-items: center;
+  transition: transform 0.25s ease;
+}
 
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0,0,0,0.02);
+.schedule-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
 
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+.schedule-item:first-child {
+  padding-top: 10px;
 }
 
 .schedule-item:hover {
   transform: translateX(4px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0,0,0,0.02);
 }
 
 /* =========================================================
@@ -501,7 +517,7 @@ main {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 
-  z-index: 999;
+  z-index: 9999;
 }
 
 /* =========================================================
@@ -527,7 +543,7 @@ main {
   overflow: hidden;
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15), 0 8px 25px rgba(0, 0, 0, 0.1);
 
-  z-index: 1000;
+  z-index: 10000;
 
   animation: modalIn 0.2s ease-out;
 }
@@ -886,14 +902,51 @@ main {
    RESOURCE LINK (video / practice — now clickable)
 ========================================================= */
 
-.resource-link {
-  color: #1d4ed8;
-  text-decoration: none;
+.schedule-content .resource-link {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 4px;
+
+  margin-top: 6px;
+  margin-right: 10px;
+
+  font-size: 13px;
   font-weight: 600;
+  text-decoration: none;
+
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 
-.resource-link:hover {
-  text-decoration: underline;
+.schedule-content .resource-link.square-btn {
+  border-radius: 4px;
+  margin-top: 0;
+  margin-right: 0;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.5;
+  min-width: 130px;
+  justify-content: center;
+}
+
+.schedule-content .video-link {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.schedule-content .video-link:hover {
+  background: #dbeafe;
+}
+
+.schedule-content .practice-link {
+  color: #0f766e;
+  background: #f0fdfa;
+}
+
+.schedule-content .practice-link:hover {
+  background: #ccfbf1;
 }
 
 /* =========================================================
@@ -1115,4 +1168,174 @@ main {
 .resource-link.video-link {
   border: none;
   cursor: pointer;
+}
+
+/* =========================================================
+   MONTH VIEW (FULL MICRO PLAN)
+========================================================= */
+
+.full-plan-block {
+  margin-bottom: 16px;
+}
+
+.full-plan-block-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #172033;
+}
+
+.full-plan-block-subtitle {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: #687386;
+}
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.month-nav button {
+  border: 1px solid #d7dce5;
+  background: white;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #30394a;
+  cursor: pointer;
+}
+
+.month-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.month-nav .full-plan-block-title {
+  margin: 0;
+}
+
+.empty-note {
+  color: #687386;
+  font-size: 13px;
+}
+
+.month-day-list {
+  flex: 1;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.month-day-list table.schedule-table {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13.5px;
+}
+
+.month-day-list th {
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.month-day-list td {
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  vertical-align: middle;
+}
+
+.month-day-list tr:last-child td {
+  border-bottom: none;
+}
+
+.month-day-list tr:hover {
+  background-color: #f8fafc;
+}
+
+.month-day-date {
+  font-weight: 600;
+  color: #30394a;
+}
+
+.month-day-subject {
+  font-weight: 600;
+  color: #30394a;
+}
+
+.month-day-test {
+  color: #e11d48;
+  font-weight: 600;
+}
+
+.month-day-test em {
+  font-size: 11px;
+  color: #ef4444;
+  font-style: normal;
+  margin-left: 6px;
+}
+
+.month-day-study {
+  color: #64748b;
+}
+
+.month-day-hours {
+  font-weight: 600;
+  color: #334155;
+}
+
+/* =========================================================
+   DEACTIVATED UI
+========================================================= */
+.deactivated-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f1f5f9;
+}
+
+.deactivated-card {
+  background: white;
+  padding: 50px 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.deactivated-icon {
+  color: #ef4444;
+  margin-bottom: 20px;
+}
+
+.deactivated-card h2 {
+  font-size: 24px;
+  color: #1e293b;
+  margin-bottom: 10px;
+  margin-top: 0;
+}
+
+.deactivated-card p {
+  color: #64748b;
+  font-size: 16px;
+  margin: 0;
+  line-height: 1.5;
 }

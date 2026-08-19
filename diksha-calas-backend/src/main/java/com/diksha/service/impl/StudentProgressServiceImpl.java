@@ -189,7 +189,7 @@ public class StudentProgressServiceImpl
                         });
 
         progress.setHoursStudied(
-                request.getStudiedHours()
+                progress.getHoursStudied() + request.getStudiedHours()
         );
 
         if (request.getStatus() != null

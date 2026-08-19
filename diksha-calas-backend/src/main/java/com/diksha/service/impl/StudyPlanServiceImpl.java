@@ -304,8 +304,19 @@ public class StudyPlanServiceImpl implements StudyPlanService {
             schedule.setPlannedHours(session.plannedHours());
             schedule.setManualOverride(false);
             schedule.setTestType("study");
-            schedule.setVideoTitle(session.videoTitle());
-            schedule.setVideoUrl(session.videoUrl());
+
+            String vTitle = session.videoTitle();
+            if (vTitle != null && vTitle.length() > 250) {
+                vTitle = vTitle.substring(0, 250) + "...";
+            }
+            schedule.setVideoTitle(vTitle);
+
+            String vUrl = session.videoUrl();
+            if (vUrl != null && vUrl.length() > 490) {
+                vUrl = vUrl.substring(0, 490);
+            }
+            schedule.setVideoUrl(vUrl);
+
             schedule.setPracticeTitle(session.practiceTitle());
             schedule.setPracticeLink(session.practiceLink());
             schedule.setPracticeQuestionCount(session.practiceQuestionCount());

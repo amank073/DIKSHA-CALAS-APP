@@ -13,6 +13,7 @@ public class CurrentUserResponse {
     private String currentClass;
     private String subjectSpecialization;
     private String targetExam;
+    private Boolean enabled;
 
 
     public CurrentUserResponse() {
@@ -60,7 +61,8 @@ public class CurrentUserResponse {
             RoleType role,
             String currentClass,
             String subjectSpecialization,
-            String targetExam) {
+            String targetExam,
+            Boolean enabled) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -70,6 +72,7 @@ public class CurrentUserResponse {
         this.currentClass = currentClass;
         this.subjectSpecialization = subjectSpecialization;
         this.targetExam = targetExam;
+        this.enabled = enabled;
     }
 
     public Long getId() {
@@ -106,5 +109,9 @@ public class CurrentUserResponse {
 
     public String getTargetExam() {
         return targetExam;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
     }
 }

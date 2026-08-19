@@ -6,6 +6,8 @@ import com.diksha.dto.StudentProfileResponse;
 import com.diksha.dto.StudentUpdateRequest;
 import com.diksha.entity.StudentProfile;
 import com.diksha.entity.User;
+import com.diksha.entity.DeletedUser;
+import com.diksha.repository.DeletedUserRepository;
 import com.diksha.enums.RoleType;
 import com.diksha.repository.*;
 import com.diksha.service.StudentManagementService;
@@ -28,6 +30,7 @@ public class StudentManagementServiceImpl
     private final DailyScheduleRepository dailyScheduleRepository;
 
     private final MilestoneRepository milestoneRepository;
+    private final DeletedUserRepository deletedUserRepository;
     private final StudentProgressRepository studentProgressRepository;
     private final StudyPlanRepository studyPlanRepository;
 
@@ -41,7 +44,8 @@ public class StudentManagementServiceImpl
 
             MilestoneRepository milestoneRepository,
             StudentProgressRepository studentProgressRepository,
-            StudyPlanRepository studyPlanRepository) {
+            StudyPlanRepository studyPlanRepository,
+            DeletedUserRepository deletedUserRepository) {
 
         this.profileRepository = profileRepository;
         this.userRepository = userRepository;
@@ -53,6 +57,7 @@ public class StudentManagementServiceImpl
         this.milestoneRepository = milestoneRepository;
         this.studentProgressRepository = studentProgressRepository;
         this.studyPlanRepository = studyPlanRepository;
+        this.deletedUserRepository = deletedUserRepository;
     }
 
     // =========================================================
@@ -347,7 +352,12 @@ public class StudentManagementServiceImpl
         // 7. Finally delete User
         // -----------------------------------------------------
 
+        String studentEmail = student.getEmail();
         userRepository.delete(student);
+
+        if (!deletedUserRepository.existsByEmail(studentEmail)) {
+            deletedUserRepository.save(new com.diksha.entity.DeletedUser(studentEmail));
+        }
     }
 
     // =========================================================

@@ -1,6 +1,6 @@
 import { API_ORIGIN, API_BASE_URL } from '../../core/config/api-config';
 import { ChangeDetectorRef, Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../environments/environment';
@@ -11,15 +11,17 @@ import { FormsModule } from '@angular/forms';
 
 import { PhaseTimelineComponent } from '../../shared/components/phase-timeline/phase-timeline';
 import { WeeklySubjectTimelineComponent } from '../../shared/components/weekly-subject-timeline/weekly-subject-timeline';
+import { ChatWidgetComponent } from '../../shared/components/chat-widget/chat-widget.component';
 
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, PhaseTimelineComponent, WeeklySubjectTimelineComponent],
+  imports: [CommonModule, FormsModule, PhaseTimelineComponent, WeeklySubjectTimelineComponent, ChatWidgetComponent],
   templateUrl: './student-dashboard.html',
   styleUrl: './student-dashboard.css'
 })
 export class StudentDashboardComponent implements OnInit {
+  @ViewChild(ChatWidgetComponent) chatWidget!: ChatWidgetComponent;
 
   // =========================
   // API URL
@@ -37,14 +39,23 @@ export class StudentDashboardComponent implements OnInit {
   schedule: any[] = [];
 
   dashboard: any = null;
-  
+
   userProfile: any = null;
   examType: string = '';
-  
+
   showProfileModal = false;
 
   toggleProfileModal(): void {
     this.showProfileModal = !this.showProfileModal;
+    if (this.showProfileModal && this.chatWidget) {
+      this.chatWidget.closeChat();
+    }
+  }
+
+  onChatToggled(isOpen: boolean): void {
+    if (isOpen) {
+      this.showProfileModal = false;
+    }
   }
 
   closeProfileModal(): void {
@@ -82,8 +93,22 @@ export class StudentDashboardComponent implements OnInit {
   // =========================
 
   loading = true;
-
+  isMacroPlanExpanded = false;
+  isWeeklyScheduleExpanded = false;
+  isMonthlyScheduleExpanded = false;
   errorMessage = '';
+
+  toggleMacroPlan(): void {
+    this.isMacroPlanExpanded = !this.isMacroPlanExpanded;
+  }
+
+  toggleWeeklySchedule(): void {
+    this.isWeeklyScheduleExpanded = !this.isWeeklyScheduleExpanded;
+  }
+
+  toggleMonthlySchedule(): void {
+    this.isMonthlyScheduleExpanded = !this.isMonthlyScheduleExpanded;
+  }
 
 
   // =========================
@@ -95,7 +120,7 @@ export class StudentDashboardComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private sanitizer: DomSanitizer
-  ) {}
+  ) { }
 
 
   // =========================
@@ -196,16 +221,16 @@ export class StudentDashboardComponent implements OnInit {
         this.dashboard = result.dashboard;
 
         this.userProfile = result.me;
-        
+
         // Extract exam type from any subject name
         this.examType = '';
         if (this.dashboard?.subjects?.length > 0) {
-            const firstSubject = this.dashboard.subjects[0].subjectName || '';
-            if (firstSubject.includes('(JEE)')) {
-                this.examType = 'JEE';
-            } else if (firstSubject.includes('(NEET)')) {
-                this.examType = 'NEET';
-            }
+          const firstSubject = this.dashboard.subjects[0].subjectName || '';
+          if (firstSubject.includes('(JEE)')) {
+            this.examType = 'JEE';
+          } else if (firstSubject.includes('(NEET)')) {
+            this.examType = 'NEET';
+          }
         }
 
 
@@ -392,11 +417,13 @@ export class StudentDashboardComponent implements OnInit {
 
   playingVideo: {
     title: string;
-    embedUrl: SafeResourceUrl | null;
+    embedUrl: import('@angular/platform-browser').SafeResourceUrl | null;
     originalUrl: string;
     scheduleId?: number;
     startTimeMs?: number;
     isVideoTag?: boolean;
+    playlist?: any[];
+    isPlaylistVisible?: boolean;
   } | null = null;
   isSearchingVideo: boolean = false;
   videoSearchError: string = '';
@@ -425,11 +452,13 @@ export class StudentDashboardComponent implements OnInit {
         originalUrl: item.videoUrl,
         scheduleId: item.id,
         startTimeMs: new Date().getTime(),
-        isVideoTag: false
+        isVideoTag: false,
+        isPlaylistVisible: false
       };
+      document.body.style.overflow = 'hidden';
       return;
-    } 
-    
+    }
+
     const isFakeOrSearch = item.videoUrl && (item.videoUrl.includes('youtube.com/results') || item.videoUrl.includes('dikshacalas.edu'));
 
     if (item.videoUrl && !isFakeOrSearch) {
@@ -441,53 +470,84 @@ export class StudentDashboardComponent implements OnInit {
         originalUrl: item.videoUrl,
         scheduleId: item.id,
         startTimeMs: new Date().getTime(),
-        isVideoTag: !!isVideo
+        isVideoTag: !!isVideo,
+        isPlaylistVisible: false
       };
+      document.body.style.overflow = 'hidden';
       return;
     }
 
-    // YOUTUBE SEARCH API (finds top video and plays it)
+    // YOUTUBE SEARCH via BACKEND API (finds top 5 videos and plays the 1st)
     this.isSearchingVideo = true;
     this.videoSearchError = '';
-    const query = encodeURIComponent(item.videoTitle || 'Educational Video');
-    const fallbackOriginalUrl = `https://www.youtube.com/results?search_query=${query}`;
-    
+    const fallbackOriginalUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(item.videoTitle || 'Educational Video')}`;
+
     this.playingVideo = {
       title: item.videoTitle || 'Video',
       embedUrl: null,
       originalUrl: fallbackOriginalUrl,
       scheduleId: item.id,
       startTimeMs: new Date().getTime(),
-      isVideoTag: false
+      isVideoTag: false,
+      isPlaylistVisible: false
     };
-    
-    this.http.get<any>(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${query}&type=video&key=${environment.YOUTUBE_API_KEY}`)
+    document.body.style.overflow = 'hidden';
+
+    const params = new HttpParams()
+      .set('topicName', item.topic?.topicName || item.videoTitle || '')
+      .set('subjectName', item.subjectName || '')
+      .set('examType', this.plan?.variant || '');
+
+    this.http.get<any[]>(`${this.apiUrl}/api/student/videos/recommend`, { headers: this.authHeaders(), params })
       .subscribe({
-          next: (response) => {
-            if (response.items && response.items.length > 0) {
-              const fetchedId = response.items[0].id.videoId;
+        next: (videos) => {
+          if (videos && videos.length > 0) {
+            const mainVideo = videos[0];
+            const fetchedId = this.extractYouTubeVideoId(mainVideo.videoUrl);
+            if (fetchedId) {
               const embedUrl = `https://www.youtube-nocookie.com/embed/${fetchedId}?autoplay=1&rel=0`;
               this.playingVideo = {
-                title: item.videoTitle || 'Video',
+                title: mainVideo.videoTitle,
                 embedUrl: this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl),
-                originalUrl: item.videoUrl,
+                originalUrl: mainVideo.videoUrl,
                 scheduleId: item.id,
                 startTimeMs: new Date().getTime(),
-                isVideoTag: false
+                isVideoTag: false,
+                playlist: videos,
+                isPlaylistVisible: true
               };
-            } else {
-              this.videoSearchError = 'No videos found for this topic.';
             }
-            this.isSearchingVideo = false;
-            this.cdr.markForCheck();
-          },
-          error: (err) => {
-            console.error('YouTube search failed', err);
-            this.videoSearchError = 'Failed, Try clicking the link below instead.';
-            this.isSearchingVideo = false;
-            this.cdr.markForCheck();
+          } else {
+            this.videoSearchError = 'No videos found for this topic.';
           }
-        });
+          this.isSearchingVideo = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Backend video recommendation failed', err);
+          this.videoSearchError = 'Failed, Try clicking the link below instead.';
+          this.isSearchingVideo = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  playFromPlaylist(video: any): void {
+    if (this.playingVideo) {
+      const videoId = this.extractYouTubeVideoId(video.videoUrl);
+      if (videoId) {
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+        this.playingVideo.title = video.videoTitle;
+        this.playingVideo.originalUrl = video.videoUrl;
+        this.playingVideo.embedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+      }
+    }
+  }
+
+  togglePlaylist(): void {
+    if (this.playingVideo) {
+      this.playingVideo.isPlaylistVisible = !this.playingVideo.isPlaylistVisible;
+    }
   }
 
   closeVideo(): void {
@@ -495,16 +555,11 @@ export class StudentDashboardComponent implements OnInit {
       const watchTimeMs = new Date().getTime() - this.playingVideo.startTimeMs;
       const watchTimeHours = watchTimeMs / (1000 * 60 * 60);
 
-      // Only save if watched for more than 1 minute (1/60th of an hour)
-      if (watchTimeHours > (1/60)) {
-        // Fetch existing studied hours from dashboard data
-        const existingProgress = this.dashboard?.todayProgress?.find((p: any) => p.scheduleId === this.playingVideo?.scheduleId);
-        const existingHours = existingProgress?.studiedHours || 0;
-        const totalHours = existingHours + watchTimeHours;
-
+      // Only save if watched for more than 3 seconds
+      if (watchTimeHours > (3 / 3600)) {
         const payload = {
           scheduleId: this.playingVideo.scheduleId,
-          studiedHours: totalHours,
+          studiedHours: watchTimeHours,
           status: 'COMPLETED',
           remarks: 'Watched video on platform'
         };
@@ -520,14 +575,11 @@ export class StudentDashboardComponent implements OnInit {
       }
     }
     this.playingVideo = null;
+    document.body.style.overflow = 'auto';
   }
-
 
   // =========================
   // FULL STUDY PLAN — month-by-month navigation
-  // (phase timeline + weekly subject timeline use `plan.schedules`
-  //  directly, since the backend already returns the full list —
-  //  see StudyPlanServiceImpl.mapToResponse)
   // =========================
 
   currentMonthOffset = 0;
@@ -571,5 +623,4 @@ export class StudentDashboardComponent implements OnInit {
   goToNextMonth(): void {
     if (this.currentMonthOffset < this.availableMonths.length - 1) this.currentMonthOffset++;
   }
-
 }

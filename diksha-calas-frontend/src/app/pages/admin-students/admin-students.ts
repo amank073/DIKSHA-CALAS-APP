@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { ChatService } from '../../core/services/chat.service';
 
 @Component({
   selector: 'app-admin-students',
@@ -17,6 +18,7 @@ export class AdminStudentsComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private chatService = inject(ChatService);
 
   // =========================
   // API
@@ -62,6 +64,12 @@ export class AdminStudentsComponent implements OnInit {
 
   showStudentModal = false;
   showEditModal = false;
+  showDeleteConfirmModal = false;
+  studentToDelete: any = null;
+
+  showAlertModal = false;
+  selectedAlertStudent: any = null;
+  alertMessage = '';
   showTeacherModal = false;
 
   // =========================
@@ -457,14 +465,18 @@ export class AdminStudentsComponent implements OnInit {
       return;
     }
 
-    const studentId = student.studentId;
-    const studentName = student.studentName || 'this student';
+    this.studentToDelete = student;
+    this.showDeleteConfirmModal = true;
+  }
 
-    const confirmed = window.confirm(`Are you sure you want to delete ${studentName}?`);
+  closeDeleteConfirmModal(): void {
+    this.showDeleteConfirmModal = false;
+    this.studentToDelete = null;
+  }
 
-    if (!confirmed) {
-      return;
-    }
+  confirmDeleteStudent(): void {
+    if (!this.studentToDelete) return;
+    const studentId = this.studentToDelete.studentId;
 
     this.errorMessage = '';
     this.successMessage = '';
@@ -483,30 +495,21 @@ export class AdminStudentsComponent implements OnInit {
             this.selectedStudent = null;
             this.showStudentModal = false;
             this.showEditModal = false;
-            this.showTeacherModal = false;
           }
 
           this.successMessage = 'Student deleted successfully.';
-
-          this.cdr.markForCheck();
+          this.closeDeleteConfirmModal();
 
           setTimeout(() => {
             this.successMessage = '';
-
             this.cdr.markForCheck();
           }, 3000);
         },
 
-        error: (error) => {
-          if (error.status === 401 || error.status === 403) {
-            this.errorMessage = 'Session expired. Please login again.';
-          } else if (error.status === 404) {
-            this.errorMessage = 'Student not found.';
-          } else {
-            this.errorMessage = 'Unable to delete student.';
-          }
-
-          this.cdr.markForCheck();
+        error: (err: any) => {
+          console.error('Failed to delete student', err);
+          alert('Failed to delete student');
+          this.closeDeleteConfirmModal();
         },
       });
   }
@@ -546,5 +549,36 @@ export class AdminStudentsComponent implements OnInit {
     localStorage.removeItem('userEmail');
 
     this.router.navigate(['/login']);
+  }
+
+  // =========================
+  // ALERTS
+  // =========================
+
+  openAlertModal(student: any) {
+    this.selectedAlertStudent = student;
+    this.alertMessage = '';
+    this.showAlertModal = true;
+  }
+
+  closeAlertModal() {
+    this.showAlertModal = false;
+    this.selectedAlertStudent = null;
+  }
+
+  sendAlert() {
+    if (!this.selectedAlertStudent || !this.alertMessage.trim()) return;
+
+    // Use studentId for message receiver
+    const receiverId = this.selectedAlertStudent.studentId || this.selectedAlertStudent.id; 
+
+    this.chatService.sendMessage(receiverId, this.alertMessage, true).subscribe({
+      next: () => {
+        this.closeAlertModal();
+      },
+      error: (err: any) => {
+        console.error('Failed to send alert', err);
+      }
+    });
   }
 }

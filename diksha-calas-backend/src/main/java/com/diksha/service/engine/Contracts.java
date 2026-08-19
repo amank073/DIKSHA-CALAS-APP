@@ -158,7 +158,9 @@ public final class Contracts {
 
     public record ContentOutput(
             String videoTitle,
-            String videoUrl
+            String videoUrl,
+            String thumbnailUrl,
+            String channelName
     ) {
     }
 

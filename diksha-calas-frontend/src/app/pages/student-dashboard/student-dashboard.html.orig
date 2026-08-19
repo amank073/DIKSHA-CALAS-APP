@@ -375,19 +375,22 @@
           </small>
 
 
-          <div class="action-buttons-container" style="display: flex; gap: 30px; margin-top: 10px; align-items: center;">
-            <!-- Video (ContentRecommender) — plays in an on-page modal,
-                 never redirects away to youtube.com -->
-            <button type="button" *ngIf="item.videoUrl" (click)="openVideo(item)" class="resource-link video-link square-btn">
-              ▶ Watch Video
-            </button>
+          <!-- Video (ContentRecommender) — plays in an on-page modal,
+               never redirects away to youtube.com -->
 
-            <!-- Practice / DPP (PracticeAllocator) -->
-            <a *ngIf="item.practiceLink" [href]="item.practiceLink" target="_blank" rel="noopener noreferrer"
-              class="resource-link practice-link square-btn">
-              ✎ DPP Practice
-            </a>
-          </div>
+          <button type="button" *ngIf="item.videoUrl" (click)="openVideo(item)" class="resource-link video-link">
+            ▶ Watch: {{ item.videoTitle || 'Video' }}
+          </button>
+
+
+          <!-- Practice / DPP (PracticeAllocator) -->
+
+          <a *ngIf="item.practiceLink" [href]="item.practiceLink" target="_blank" rel="noopener noreferrer"
+            class="resource-link practice-link">
+            ✎ {{ item.practiceTitle || 'Practice' }}
+            <span *ngIf="item.practiceQuestionCount">({{ item.practiceQuestionCount }} questions)</span>
+          </a>
+
         </div>
 
 
@@ -414,135 +417,6 @@
 
     </section>
 
-    <!-- =======================================================
-         WEEKLY SCHEDULE (Subject Tracks)
-    ======================================================== -->
-    <section *ngIf="plan" class="schedule-section">
-      <div class="section-title" (click)="toggleWeeklySchedule()"
-        [style.padding-bottom.px]="isWeeklyScheduleExpanded ? 20 : 0"
-        [style.margin-bottom.px]="isWeeklyScheduleExpanded ? 20 : 0"
-        [style.border-bottom]="isWeeklyScheduleExpanded ? '1px solid #e2e8f0' : 'none'"
-        style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: opacity 0.2s ease;"
-        onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
-
-        <div>
-          <h2 style="margin: 0 0 4px; font-size: 20px;">
-            Weekly Schedule
-          </h2>
-          <p style="margin: 0; color: #64748b; font-size: 14px;">
-            Each subject advances independently, in parallel, every week
-          </p>
-        </div>
-
-        <div style="display: flex; gap: 15px; align-items: center;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" style="color: #64748b; transition: transform 0.3s ease;"
-            [style.transform]="isWeeklyScheduleExpanded ? 'rotate(180deg)' : 'rotate(0deg)'">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-
-      </div>
-
-      <ng-container *ngIf="isWeeklyScheduleExpanded">
-        <app-weekly-subject-timeline [entries]="allSchedules"></app-weekly-subject-timeline>
-      </ng-container>
-    </section>
-
-
-    <!-- =======================================================
-         FULL MICRO PLAN (MONTH VIEW)
-    ======================================================== -->
-    <section *ngIf="plan" style="max-width: 1250px; margin: 0 auto 50px;">
-      <div class="plan-card full-plan-block"
-        style="background: #ffffff; border-radius: 20px; padding: 28px; border: 1px solid rgba(226, 232, 240, 0.6); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), 0 1px 4px rgba(0,0,0,0.02);">
-
-        <div class="section-title" (click)="toggleMonthlySchedule()"
-          [style.padding-bottom.px]="isMonthlyScheduleExpanded ? 20 : 0"
-          [style.margin-bottom.px]="isMonthlyScheduleExpanded ? 20 : 0"
-          [style.border-bottom]="isMonthlyScheduleExpanded ? '1px solid #e2e8f0' : 'none'"
-          style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: opacity 0.2s ease;"
-          onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
-
-          <div>
-            <h2 style="margin: 0 0 4px; font-size: 20px;">
-              Monthly Schedule
-            </h2>
-            <p style="margin: 0; color: #64748b; font-size: 14px;">
-              Full day-by-day learning plan.
-            </p>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <svg [style.transform]="isMonthlyScheduleExpanded ? 'rotate(180deg)' : 'rotate(0)'"
-              style="transition: transform 0.3s ease; width: 20px; height: 20px; color: #64748b;" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </div>
-        </div>
-
-        <ng-container *ngIf="isMonthlyScheduleExpanded">
-          <div class="month-nav">
-            <button type="button" (click)="goToPrevMonth()" [disabled]="currentMonthOffset === 0">← Prev</button>
-            <h3 class="full-plan-block-title">{{ currentMonthLabel }}</h3>
-            <button type="button" (click)="goToNextMonth()"
-              [disabled]="currentMonthOffset >= availableMonths.length - 1">Next →</button>
-          </div>
-
-          <p class="empty-note" *ngIf="currentMonthSchedules.length === 0">No schedule rows this month.</p>
-
-          <div class="month-day-list" *ngIf="currentMonthSchedules.length > 0">
-            <table class="schedule-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Subject</th>
-                  <th>Activity</th>
-                  <th>Planned Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of currentMonthSchedules">
-                  <td class="date-col"><span class="month-day-date">{{ item.scheduledDate }}</span></td>
-                  <td class="subject-col">
-                    <span class="month-day-subject" *ngIf="item.subjectName">{{ cleanSubjectName(item.subjectName)
-                      }}</span>
-                    <span class="dash" *ngIf="!item.subjectName">—</span>
-                  </td>
-                  <td class="activity-col">
-                    <span class="month-day-test" *ngIf="item.testType && item.testType !== 'study'">
-                      {{ item.testType === 'subject_wise' ? 'Subject Test' : 'Topic Test' }}
-                      <em *ngIf="!item.testId">(pending)</em>
-                    </span>
-                    <span class="month-day-study" *ngIf="!item.testType || item.testType === 'study'">
-                      Study Session
-                    </span>
-                  </td>
-                  <td class="time-col"><span class="month-day-hours">{{ item.plannedHours | number:'1.0-2' }}h</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </ng-container>
-
-      </div>
-    </section>
-
-    <!-- =======================================================
-         MACRO PLAN PHASES
-    ======================================================== -->
-    <section *ngIf="plan"
-      style="margin-bottom: 25px; max-width: 1250px; margin-left: auto; margin-right: auto; width: 100%;">
-      <div
-        style="background: #ffffff; border-radius: 20px; padding: 28px; border: 1px solid rgba(226, 232, 240, 0.6); display: flex; align-items: center; gap: 30px; justify-content: space-between; margin-bottom: 30px; width: 100%;">
-        <h3 style="flex-shrink: 0; margin: 0; width: 220px; font-size: 20px; font-weight: 700; color: #172033;">Macro
-          Plan Phases</h3>
-        <app-phase-timeline style="flex-grow: 1; overflow: hidden;"
-          [phaseBreakdownJson]="plan.phaseBreakdown"></app-phase-timeline>
-      </div>
-    </section>
 
     <!-- =========================
          SUBJECT PROGRESS
@@ -758,6 +632,3 @@
         </div>
       </div>
     </div>
-
-    <!-- Chat Widget for Students -->
-    <app-chat-widget (chatToggled)="onChatToggled($event)"></app-chat-widget>
