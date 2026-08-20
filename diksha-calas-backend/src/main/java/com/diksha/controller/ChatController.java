@@ -57,4 +57,11 @@ public class ChatController {
         messageService.clearChat(user, contactId);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/messages/{contactId}/read")
+    public ResponseEntity<?> markAsRead(Authentication auth, @PathVariable Long contactId) {
+        User user = getCurrentUser(auth);
+        messageService.markAsRead(user, contactId);
+        return ResponseEntity.ok().build();
+    }
 }

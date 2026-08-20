@@ -12,4 +12,5 @@ public interface MessageService {
     MessageDto sendMessage(User sender, Long receiverId, String content, boolean isAlert);
     void clearChat(User user, Long contactId);
     void cleanupOldMessages();
+    void markAsRead(User user, Long contactId);
 }

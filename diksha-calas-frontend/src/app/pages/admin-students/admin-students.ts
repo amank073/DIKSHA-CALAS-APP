@@ -571,11 +571,11 @@ export class AdminStudentsComponent implements OnInit {
 
     // Use studentId for message receiver
     const receiverId = this.selectedAlertStudent.studentId || this.selectedAlertStudent.id; 
+    const msg = this.alertMessage;
+    this.closeAlertModal();
 
-    this.chatService.sendMessage(receiverId, this.alertMessage, true).subscribe({
-      next: () => {
-        this.closeAlertModal();
-      },
+    this.chatService.sendMessage(receiverId, msg, true).subscribe({
+      next: () => {},
       error: (err: any) => {
         console.error('Failed to send alert', err);
       }

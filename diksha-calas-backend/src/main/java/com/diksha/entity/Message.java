@@ -27,6 +27,9 @@ public class Message {
     private boolean isAlert = false;
 
     @Column(nullable = false)
+    private boolean isRead = false;
+
+    @Column(nullable = false)
     private boolean clearedBySender = false;
 
     @Column(nullable = false)
@@ -71,6 +74,14 @@ public class Message {
 
     public void setAlert(boolean alert) {
         isAlert = alert;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
     }
 
     public boolean isClearedBySender() {

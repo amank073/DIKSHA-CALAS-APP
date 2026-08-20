@@ -5,14 +5,17 @@ public class ContactDto {
     private String name;
     private String role;
     private String email;
+    private int unreadCount;
+    private java.time.LocalDateTime lastMessageTime;
 
     public ContactDto() {}
 
-    public ContactDto(Long id, String name, String role, String email) {
+    public ContactDto(Long id, String name, String role, String email, int unreadCount) {
         this.id = id;
         this.name = name;
         this.role = role;
         this.email = email;
+        this.unreadCount = unreadCount;
     }
 
     public Long getId() {
@@ -45,5 +48,21 @@ public class ContactDto {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public int getUnreadCount() {
+        return unreadCount;
+    }
+
+    public void setUnreadCount(int unreadCount) {
+        this.unreadCount = unreadCount;
+    }
+
+    public java.time.LocalDateTime getLastMessageTime() {
+        return lastMessageTime;
+    }
+
+    public void setLastMessageTime(java.time.LocalDateTime lastMessageTime) {
+        this.lastMessageTime = lastMessageTime;
     }
 }

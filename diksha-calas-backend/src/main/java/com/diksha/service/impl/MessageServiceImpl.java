@@ -61,13 +61,28 @@ public class MessageServiceImpl implements MessageService {
 
         return contacts.stream()
                 .filter(u -> !u.getId().equals(user.getId()))
-                .map(u -> new ContactDto(u.getId(), u.getFirstName() + " " + u.getLastName(), u.getRole().getName().name(), u.getEmail()))
+                .map(u -> {
+                    Long unreadCount = messageRepository.countUnreadMessages(user.getId(), u.getId());
+                    java.time.LocalDateTime lastMessageTime = messageRepository.findLastMessageTime(user.getId(), u.getId());
+                    ContactDto dto = new ContactDto(u.getId(), u.getFirstName() + " " + u.getLastName(), u.getRole().getName().name(), u.getEmail(), unreadCount != null ? unreadCount.intValue() : 0);
+                    dto.setLastMessageTime(lastMessageTime);
+                    return dto;
+                })
+                .sorted((c1, c2) -> {
+                    if ("ADMIN".equals(c1.getRole()) && !"ADMIN".equals(c2.getRole())) return -1;
+                    if (!"ADMIN".equals(c1.getRole()) && "ADMIN".equals(c2.getRole())) return 1;
+                    if (c1.getLastMessageTime() == null && c2.getLastMessageTime() == null) return 0;
+                    if (c1.getLastMessageTime() == null) return 1;
+                    if (c2.getLastMessageTime() == null) return -1;
+                    return c2.getLastMessageTime().compareTo(c1.getLastMessageTime());
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<MessageDto> getConversation(User user, Long contactId) {
+        messageRepository.markMessagesAsRead(user.getId(), contactId);
         List<Message> messages = messageRepository.findConversation(user.getId(), contactId);
         List<MessageDto> result = new ArrayList<>();
         
@@ -150,5 +165,11 @@ public class MessageServiceImpl implements MessageService {
     public void cleanupOldMessages() {
         LocalDateTime threshold = LocalDateTime.now().minusDays(10);
         messageRepository.deleteOlderThan(threshold);
+    }
+    
+    @Override
+    @Transactional
+    public void markAsRead(User user, Long contactId) {
+        messageRepository.markMessagesAsRead(user.getId(), contactId);
     }
 }

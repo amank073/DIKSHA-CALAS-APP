@@ -151,10 +151,12 @@ export class AdminDashboardComponent implements OnInit {
   sendTeacherAlert() {
     if (!this.alertTeacherId || !this.alertMessage.trim()) return;
 
-    this.chatService.sendMessage(this.alertTeacherId, this.alertMessage, true).subscribe({
-      next: () => {
-        this.closeTeacherAlertModal();
-      },
+    const teacherId = this.alertTeacherId;
+    const msg = this.alertMessage;
+    this.closeTeacherAlertModal();
+
+    this.chatService.sendMessage(teacherId, msg, true).subscribe({
+      next: () => {},
       error: (err: any) => {
         console.error('Failed to send alert', err);
       }

@@ -1,30 +1,50 @@
 <!-- Floating Action Button -->
 <div class="chat-fab" (click)="toggleChat()" *ngIf="!isOpen">
   💬
+  <span class="fab-badge" *ngIf="totalUnreadCount > 0">{{ totalUnreadCount }}</span>
 </div>
 
 <!-- Chat Window -->
-<div class="chat-window" *ngIf="isOpen">
+<div class="chat-window" *ngIf="isOpen" (click)="closeMenu()">
   <!-- Header -->
   <div class="chat-header">
     <div class="header-info">
-      <span class="back-btn" *ngIf="selectedContact" (click)="selectedContact = null; stopPolling()">←</span>
+      <span class="back-btn" *ngIf="selectedContact" (click)="selectContact(null)">←</span>
       <h3 *ngIf="!selectedContact">Messages</h3>
       <h3 *ngIf="selectedContact">{{ selectedContact.name }}</h3>
     </div>
     <div class="header-actions">
-      <button class="clear-btn" *ngIf="selectedContact" (click)="clearChat()" title="Clear Chat">🗑️</button>
-      <button class="close-btn" (click)="toggleChat()">✕</button>
+      <button class="close-btn" (click)="closeChat()">✕</button>
     </div>
   </div>
 
   <!-- Contacts List (Shown when no contact is selected) -->
   <div class="contacts-list" *ngIf="!selectedContact">
-    <div class="contact-item" *ngFor="let contact of contacts" (click)="selectContact(contact)">
+    <div class="contact-item" *ngFor="let contact of contacts" [class.menu-active]="activeMenuContactId === contact.id" (click)="selectContact(contact)">
       <div class="contact-avatar">{{ contact.name.charAt(0) }}</div>
       <div class="contact-details">
         <div class="contact-name">{{ contact.name }}</div>
-        <div class="contact-role">{{ contact.role }}</div>
+      </div>
+      
+      <div class="contact-meta">
+        <div class="contact-time" *ngIf="contact.lastMessageTime">
+          {{ getContactTimeText(contact.lastMessageTime) }}
+        </div>
+        <div class="contact-badge" *ngIf="contact.unreadCount && contact.unreadCount > 0">
+          {{ contact.unreadCount }}
+        </div>
+      </div>
+      
+      <div class="contact-menu-wrapper" (click)="$event.stopPropagation()">
+        <button class="menu-trigger" [class.active]="activeMenuContactId === contact.id" (click)="toggleMenu($event, contact.id)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="contact-menu" *ngIf="activeMenuContactId === contact.id">
+          <div class="menu-item" (click)="markAsReadFromMenu($event, contact)">Mark as read</div>
+          <div class="menu-item" (click)="clearChatFromMenu($event, contact)">Clear chat</div>
+        </div>
       </div>
     </div>
     <div class="empty-state" *ngIf="contacts.length === 0">
@@ -35,25 +55,36 @@
   <!-- Chat Area (Shown when contact is selected) -->
   <div class="chat-area" *ngIf="selectedContact">
     <div class="messages-container" #messagesContainer>
-      <div class="message" *ngFor="let msg of messages" 
-           [ngClass]="{'sent': msg.senderId === currentUser.id, 'received': msg.senderId !== currentUser.id, 'alert-msg': msg.alert}">
-        <div class="message-content">
-          <strong *ngIf="msg.alert" class="alert-badge">⚠️ ALERT</strong>
-          {{ msg.content }}
+      <ng-container *ngFor="let msg of messages; let i = index">
+        <div class="date-separator" *ngIf="showDateHeader(i)">
+          <span class="date-badge">{{ getDateHeaderText(msg.timestamp) }}</span>
         </div>
-        <div class="message-time">{{ msg.timestamp | date:'shortTime' }}</div>
-      </div>
+        <div class="message" 
+             [ngClass]="{'sent': msg.senderId === currentUser.id, 'received': msg.senderId !== currentUser.id}">
+          <div class="message-content">
+            {{ msg.content }}
+          </div>
+          <div class="message-time">{{ msg.timestamp | date:'shortTime' }}</div>
+        </div>
+      </ng-container>
       <div class="empty-state" *ngIf="messages.length === 0">
-        No messages yet.
+        <div class="date-separator" *ngIf="selectedContact.lastMessageTime">
+          <span class="date-badge">{{ getDateHeaderText(selectedContact.lastMessageTime) }}</span>
+        </div>
       </div>
     </div>
 
-    <!-- Input Area (Hide if Student is talking to Admin) -->
-    <div class="input-area" *ngIf="!(currentUser.role === 'STUDENT' && selectedContact.role === 'ADMIN')">
+    <!-- Input Area (Hide if chatting with Admin) -->
+    <div class="input-area" *ngIf="selectedContact.role !== 'ADMIN'">
       <input type="text" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" placeholder="Type a message...">
-      <button (click)="sendMessage()">Send</button>
+      <button *ngIf="newMessage.trim()" (click)="sendMessage()" class="send-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
     </div>
-    <div class="input-area disabled-area" *ngIf="currentUser.role === 'STUDENT' && selectedContact.role === 'ADMIN'">
+    <div class="input-area disabled-area" *ngIf="selectedContact.role === 'ADMIN'">
       <span>Cannot reply to Admin.</span>
     </div>
   </div>

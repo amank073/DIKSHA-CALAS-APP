@@ -8,6 +8,8 @@ export interface Contact {
   name: string;
   role: string;
   email: string;
+  unreadCount?: number;
+  lastMessageTime?: string;
 }
 
 export interface Message {
@@ -44,5 +46,9 @@ export class ChatService {
 
   clearChat(contactId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/messages/${contactId}`);
+  }
+
+  markAsRead(contactId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/messages/${contactId}/read`, {});
   }
 }
