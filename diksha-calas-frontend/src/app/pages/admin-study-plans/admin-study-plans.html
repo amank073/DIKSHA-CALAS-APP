@@ -15,9 +15,7 @@
 
     <app-error-banner [message]="errorMessage"></app-error-banner>
 
-    <div class="success-banner" *ngIf="successMessage">
-      {{ successMessage }}
-    </div>
+    
 
     <app-empty-state *ngIf="students.length === 0" message="No students yet."></app-empty-state>
 

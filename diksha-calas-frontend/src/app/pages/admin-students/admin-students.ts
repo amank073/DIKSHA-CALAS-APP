@@ -499,10 +499,11 @@ export class AdminStudentsComponent implements OnInit {
 
           this.successMessage = 'Student deleted successfully.';
           this.closeDeleteConfirmModal();
+          this.cdr.detectChanges(); // IMPORTANT: Instantly update UI
 
           setTimeout(() => {
             this.successMessage = '';
-            this.cdr.markForCheck();
+            this.cdr.detectChanges();
           }, 3000);
         },
 

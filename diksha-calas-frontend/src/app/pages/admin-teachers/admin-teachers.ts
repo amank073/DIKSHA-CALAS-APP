@@ -290,7 +290,11 @@ export class AdminTeachersComponent implements OnInit {
             this.teachers[index] = updatedTeacher;
           }
           this.successMessage = 'Teacher soft deleted successfully (Marked as Inactive).';
-          setTimeout(() => this.successMessage = '', 3000);
+          this.cdr.detectChanges(); // IMPORTANT: Instantly update UI
+          setTimeout(() => {
+            this.successMessage = '';
+            this.cdr.detectChanges();
+          }, 3000);
         },
         error: (err) => {
           this.errorMessage = 'Unable to delete teacher.';
@@ -327,7 +331,11 @@ export class AdminTeachersComponent implements OnInit {
           this.successMessage = 'Teacher permanently deleted.';
           this.saving = false;
           this.closeDeleteConfirmModal();
-          setTimeout(() => this.successMessage = '', 3000);
+          this.cdr.detectChanges(); // IMPORTANT: Instantly update UI
+          setTimeout(() => {
+            this.successMessage = '';
+            this.cdr.detectChanges();
+          }, 3000);
         },
         error: (err) => {
           this.saving = false;
