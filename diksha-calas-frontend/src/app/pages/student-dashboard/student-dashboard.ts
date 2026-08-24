@@ -96,6 +96,7 @@ export class StudentDashboardComponent implements OnInit {
   isMacroPlanExpanded = false;
   isWeeklyScheduleExpanded = false;
   isMonthlyScheduleExpanded = false;
+  isGeneratingPlan = false;
   errorMessage = '';
 
   toggleMacroPlan(): void {
@@ -149,6 +150,7 @@ export class StudentDashboardComponent implements OnInit {
 
     this.loading = true;
     this.errorMessage = '';
+    this.isGeneratingPlan = false;
 
 
     // =========================
@@ -178,7 +180,12 @@ export class StudentDashboardComponent implements OnInit {
       plan: this.http.get<any>(
         `${this.apiUrl}/api/student/study-plans/active`,
         { headers }
-      ).pipe(catchError(() => of(null))),
+      ).pipe(catchError((err) => {
+        if (err.status === 404) {
+          this.isGeneratingPlan = true;
+        }
+        return of(null);
+      })),
 
       // Today's Schedule
       schedule: this.http.get<any[]>(

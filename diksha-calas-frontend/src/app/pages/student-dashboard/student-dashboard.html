@@ -300,8 +300,18 @@
 
       <!-- No Plan -->
 
-      <div *ngIf="!loading && !plan" class="empty">
+      <div *ngIf="!loading && !plan && !isGeneratingPlan" class="empty">
         No active study plan available.
+      </div>
+
+      <!-- Generating Plan -->
+      <div *ngIf="!loading && !plan && isGeneratingPlan" class="empty" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;">
+        <svg width="40" height="40" viewBox="0 0 50 50" style="animation: spin 1s linear infinite;">
+          <circle cx="25" cy="25" r="20" fill="none" stroke="#e2e8f0" stroke-width="4"></circle>
+          <circle cx="25" cy="25" r="20" fill="none" stroke="#2563eb" stroke-width="4" stroke-dasharray="31.4 125.6" stroke-linecap="round"></circle>
+        </svg>
+        <p style="margin: 0; font-size: 15px; font-weight: 500; color: #475569;">Your study plan is being generated. This may take few seconds.</p>
+        <button type="button" class="refresh-btn" (click)="loadDashboard()" style="margin-top: 10px;">Check Again</button>
       </div>
 
     </section>
