@@ -695,6 +695,7 @@
               </div>
               <div class="playlist-item-thumbnail">
                 <img *ngIf="vid.thumbnailUrl" [src]="vid.thumbnailUrl" alt="Thumbnail" />
+                <span class="video-duration" *ngIf="vid.durationSeconds">{{ formatDuration(vid.durationSeconds) }}</span>
               </div>
               <div class="playlist-item-details">
                 <div class="playlist-item-title">{{ vid.videoTitle }}</div>

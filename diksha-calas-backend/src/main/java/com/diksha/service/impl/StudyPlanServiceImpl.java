@@ -16,6 +16,7 @@ import com.diksha.enums.ExamType;
 import com.diksha.enums.PlanStatus;
 import com.diksha.enums.RoleType;
 import com.diksha.repository.*;
+import com.diksha.service.MessageService;
 import com.diksha.service.StudyPlanService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,9 +50,9 @@ public class StudyPlanServiceImpl implements StudyPlanService {
     private final TopicRepository topicRepository;
     private final ResourceRepository resourceRepository;
     private final TestRepository testRepository;
-    /** The Plan Generator coordinator — see PlanGeneratorService for the full Macro -> Micro -> Practice -> Assessment orchestration. */
     private final com.diksha.service.engine.PlanGeneratorService planGeneratorService;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private final MessageService messageService;
 
 
     private User getAccessibleStudent(
@@ -118,7 +119,8 @@ public class StudyPlanServiceImpl implements StudyPlanService {
             StudentProfileRepository studentProfileRepository,
             TeacherProfileRepository teacherProfileRepository,
             com.diksha.service.engine.PlanGeneratorService planGeneratorService,
-            com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper,
+            MessageService messageService) {
 
         this.studyPlanRepository = studyPlanRepository;
         this.dailyScheduleRepository = dailyScheduleRepository;
@@ -131,6 +133,7 @@ public class StudyPlanServiceImpl implements StudyPlanService {
         this.teacherProfileRepository = teacherProfileRepository;
         this.planGeneratorService = planGeneratorService;
         this.objectMapper = objectMapper;
+        this.messageService = messageService;
     }
 
     // =========================================================
@@ -177,10 +180,19 @@ public class StudyPlanServiceImpl implements StudyPlanService {
                 actorEmail
         );
 
-        return generatePlanForStudentInternal(
+        StudyPlanResponse response = generatePlanForStudentInternal(
                 request,
                 student
         );
+
+        User actor = getUser(actorEmail);
+        try {
+            messageService.sendMessage(actor, student.getId(), "Your entire study plan has been regenerated.", false);
+        } catch (Exception e) {
+            // Ignore messaging errors
+        }
+
+        return response;
     }
 
     @Override
@@ -714,9 +726,27 @@ public class StudyPlanServiceImpl implements StudyPlanService {
 
         schedule.setManualOverride(true);
 
-        return mapSchedule(
-                dailyScheduleRepository.save(schedule)
-        );
+        DailySchedule updatedSchedule = dailyScheduleRepository.save(schedule);
+        
+        String subjectName = updatedSchedule.getSubjectName();
+        if (subjectName == null && updatedSchedule.getTopic() != null && updatedSchedule.getTopic().getSubject() != null) {
+            subjectName = updatedSchedule.getTopic().getSubject().getSubjectName();
+        }
+        if (subjectName == null) {
+            subjectName = "Subject";
+        }
+        
+        // Remove (JEE) or (NEET) from subject name if present
+        subjectName = subjectName.replaceAll(" \\(JEE\\)", "").replaceAll(" \\(NEET\\)", "").trim();
+
+        User actor = getUser(actorEmail);
+        try {
+            messageService.sendMessage(actor, schedule.getStudyPlan().getStudent().getId(), "Your " + subjectName + " study plan has been changed.", false);
+        } catch (Exception e) {
+            // Ignore messaging errors
+        }
+
+        return mapSchedule(updatedSchedule);
     }
 
     // =========================================================

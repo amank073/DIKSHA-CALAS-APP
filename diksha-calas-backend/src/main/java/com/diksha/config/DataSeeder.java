@@ -59,7 +59,23 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /** name, syllabusClass ("11"/"12"), tisScore, prerequisiteName (or null) — mirrors Python's TopicSeed. */
-    private record TopicSeed(String name, String syllabusClass, double tisScore, String prerequisite) {
+    private record TopicSeed(
+            String name,
+            String syllabusClass,
+            double tisScore,
+            String prerequisite,
+            String ncertChapter,
+            boolean estimated
+    ) {
+        // Convenience constructor for the common case (real PYQ-derived value).
+        TopicSeed(String name, String syllabusClass, double tisScore, String prerequisite, String ncertChapter) {
+            this(name, syllabusClass, tisScore, prerequisite, ncertChapter, false);
+        }
+        
+        // Backwards compatibility for existing Physics/Chemistry seeds
+        TopicSeed(String name, String syllabusClass, double tisScore, String prerequisite) {
+            this(name, syllabusClass, tisScore, prerequisite, null, false);
+        }
     }
 
     private record TeacherSeed(String fullName, String email, String subjectSpecialization) {
@@ -97,7 +113,8 @@ public class DataSeeder implements CommandLineRunner {
             new TopicSeed("Magnetism and Matter", "12", 50.61, "Moving Charges and Magnetism"),
             new TopicSeed("Electromagnetic Induction", "12", 35.46, "Moving Charges and Magnetism"),
             new TopicSeed("Alternating Current", "12", 35.46, "Electromagnetic Induction"),
-            new TopicSeed("Electromagnetic Waves", "12", 35.46, "Alternating Current"),
+            new TopicSeed("Electromagnetic Waves", "12", 14.0, "Alternating Current",
+                    "Class 12: Electromagnetic Waves — low PYQ frequency, no dedicated Arihant chapter", true),
             new TopicSeed("Ray Optics and Optical Instruments", "12", 61.4, "Electromagnetic Waves"),
             new TopicSeed("Wave Optics", "12", 61.4, "Ray Optics and Optical Instruments"),
             new TopicSeed("Dual Nature of Radiation and Matter", "12", 100.0, "Wave Optics"),
@@ -115,9 +132,11 @@ public class DataSeeder implements CommandLineRunner {
             new TopicSeed("States of Matter: Gases and Liquids", "11", 44.42, "Chemical Bonding and Molecular Structure"),
             new TopicSeed("Thermodynamics (Chemistry)", "11", 76.19, "States of Matter: Gases and Liquids"),
             new TopicSeed("Equilibrium", "11", 73.3, "Thermodynamics (Chemistry)"),
-            new TopicSeed("Redox Reactions", "11", 73.3, "Some Basic Concepts of Chemistry (Mole Concept)"),
+            new TopicSeed("Redox Reactions", "11", 35.0, "Some Basic Concepts of Chemistry (Mole Concept)",
+                    "Class 11: Redox Reactions", true),
             // --- Class 11 Organic/Inorganic branch ---
-            new TopicSeed("Hydrogen", "11", 72.85, "Classification of Elements and Periodicity"),
+            new TopicSeed("Hydrogen", "11", 12.0, "Classification of Elements and Periodicity",
+                    "Not in current rationalized NCERT Class 11 edition — legacy/low-weightage topic", true),
             new TopicSeed("s-Block Elements", "11", 72.85, "Classification of Elements and Periodicity"),
             new TopicSeed("p-Block Elements (Group 13 & 14)", "11", 44.89, "s-Block Elements"),
             new TopicSeed("Organic Chemistry: Basic Principles and Techniques", "11", 77.8, "Chemical Bonding and Molecular Structure"),
@@ -136,40 +155,85 @@ public class DataSeeder implements CommandLineRunner {
             new TopicSeed("Haloalkanes and Haloarenes", "12", 50.24, "Hydrocarbons"),
             new TopicSeed("Alcohols, Phenols and Ethers", "12", 34.91, "Haloalkanes and Haloarenes"),
             new TopicSeed("Aldehydes, Ketones and Carboxylic Acids", "12", 38.63, "Alcohols, Phenols and Ethers"),
-            new TopicSeed("Amines", "12", 37.49, "Aldehydes, Ketones and Carboxylic Acids"),
-            new TopicSeed("Biomolecules", "12", 84.95, "Amines")
+            new TopicSeed("Aliphatic Amines", "12", 37.49, "Aldehydes, Ketones and Carboxylic Acids",
+                    "Class 12: Amines"),
+            new TopicSeed("Aromatic Amines", "12", 49.79, "Aliphatic Amines",
+                    "Class 12: Amines"),
+            new TopicSeed("Biomolecules", "12", 84.95, "Aromatic Amines")
     );
 
     private static final List<TopicSeed> MATHEMATICS_TOPICS = List.of(
-            // --- Class 11 chain ---
-            new TopicSeed("Sets, Relations and Functions", "11", 33.35, null),
-            new TopicSeed("Trigonometric Functions", "11", 30.57, "Sets, Relations and Functions"),
-            new TopicSeed("Complex Numbers and Quadratic Equations", "11", 47.52, "Trigonometric Functions"),
-            new TopicSeed("Linear Inequalities", "11", 93.08, "Complex Numbers and Quadratic Equations"),
-            new TopicSeed("Permutations and Combinations", "11", 42.47, "Sets, Relations and Functions"),
-            new TopicSeed("Binomial Theorem", "11", 39.45, "Permutations and Combinations"),
-            new TopicSeed("Sequences and Series", "11", 62.74, "Binomial Theorem"),
-            new TopicSeed("Straight Lines", "11", 44.25, "Sets, Relations and Functions"),
-            new TopicSeed("Conic Sections", "11", 35.45, "Straight Lines"),
-            new TopicSeed("Introduction to Three Dimensional Geometry", "11", 75.24, "Conic Sections"),
-            new TopicSeed("Limits and Derivatives", "11", 100.0, "Trigonometric Functions"),
-            new TopicSeed("Mathematical Reasoning", "11", 93.08, "Sets, Relations and Functions"),
-            new TopicSeed("Statistics", "11", 93.08, "Sequences and Series"),
-            new TopicSeed("Probability", "11", 54.2, "Permutations and Combinations"),
-            // --- Class 12 chain ---
-            new TopicSeed("Relations and Functions (Advanced)", "12", 33.35, null),
-            new TopicSeed("Inverse Trigonometric Functions", "12", 22.09, "Relations and Functions (Advanced)"),
-            new TopicSeed("Matrices", "12", 85.28, "Relations and Functions (Advanced)"),
-            new TopicSeed("Determinants", "12", 85.28, "Matrices"),
-            new TopicSeed("Continuity and Differentiability", "12", 100.0, "Inverse Trigonometric Functions"),
-            new TopicSeed("Applications of Derivatives", "12", 68.05, "Continuity and Differentiability"),
-            new TopicSeed("Integrals", "12", 34.76, "Continuity and Differentiability"),
-            new TopicSeed("Applications of Integrals", "12", 63.53, "Integrals"),
-            new TopicSeed("Differential Equations", "12", 51.18, "Applications of Integrals"),
-            new TopicSeed("Vector Algebra", "12", 47.42, "Determinants"),
-            new TopicSeed("Three Dimensional Geometry (Advanced)", "12", 75.24, "Vector Algebra"),
-            new TopicSeed("Linear Programming", "12", 93.08, "Three Dimensional Geometry (Advanced)"),
-            new TopicSeed("Probability (Advanced)", "12", 54.2, "Probability")
+            // --- Class 11 ---
+            new TopicSeed("Sets, Relations and Functions", "11", 33.35, null,
+                    "Class 11: Sets / Relations and Functions"),
+            new TopicSeed("Trigonometric Ratios and Identities", "11", 30.57, "Sets, Relations and Functions",
+                    "Class 11: Trigonometric Functions"),
+            new TopicSeed("Trigonometric Equations", "11", 29.63, "Trigonometric Ratios and Identities",
+                    "Class 11: Trigonometric Functions"),
+            new TopicSeed("Complex Numbers", "11", 47.52, "Trigonometric Ratios and Identities",
+                    "Class 11: Complex Numbers and Quadratic Equations"),
+            new TopicSeed("Quadratic Equations", "11", 48.15, "Complex Numbers",
+                    "Class 11: Complex Numbers and Quadratic Equations"),
+            new TopicSeed("Linear Inequalities", "11", 15.0, "Quadratic Equations",
+                    "Class 11: Linear Inequalities", true),
+            new TopicSeed("Permutations and Combinations", "11", 42.47, "Sets, Relations and Functions",
+                    "Class 11: Permutations and Combinations"),
+            new TopicSeed("Binomial Theorem", "11", 39.45, "Permutations and Combinations",
+                    "Class 11: Binomial Theorem"),
+            new TopicSeed("Sequences and Series", "11", 62.74, "Binomial Theorem",
+                    "Class 11: Sequences and Series"),
+            new TopicSeed("Straight Lines", "11", 44.25, "Sets, Relations and Functions",
+                    "Class 11: Straight Lines"),
+            new TopicSeed("Circle", "11", 56.74, "Straight Lines",
+                    "Class 11: Conic Sections"),
+            new TopicSeed("Parabola", "11", 35.45, "Straight Lines",
+                    "Class 11: Conic Sections"),
+            new TopicSeed("Ellipse", "11", 31.23, "Straight Lines",
+                    "Class 11: Conic Sections"),
+            new TopicSeed("Hyperbola", "11", 31.76, "Straight Lines",
+                    "Class 11: Conic Sections"),
+            new TopicSeed("Introduction to Three Dimensional Geometry", "11", 75.24, "Circle",
+                    "Class 11: Introduction to Three Dimensional Geometry"),
+            new TopicSeed("Limits and Derivatives", "11", 100.0, "Trigonometric Ratios and Identities",
+                    "Class 11: Limits and Derivatives"),
+            new TopicSeed("Mathematical Reasoning", "11", 10.0, "Sets, Relations and Functions",
+                    "Class 11: Mathematical Reasoning (legacy chapter)", true),
+            new TopicSeed("Statistics", "11", 20.0, "Sequences and Series",
+                    "Class 11: Statistics", true),
+            new TopicSeed("Probability", "11", 54.2, "Permutations and Combinations",
+                    "Class 11: Probability"),
+
+            // --- Class 12 ---
+            new TopicSeed("Relations and Functions (Advanced)", "12", 33.35, null,
+                    "Class 12: Relations and Functions"),
+            new TopicSeed("Inverse Trigonometric Functions", "12", 22.09, "Relations and Functions (Advanced)",
+                    "Class 12: Inverse Trigonometric Functions"),
+            new TopicSeed("Properties of Triangles", "12", 22.05, "Inverse Trigonometric Functions",
+                    "Not a standalone NCERT chapter — application topic spanning Trig + Inverse Trig"),
+            new TopicSeed("Matrices", "12", 85.28, "Relations and Functions (Advanced)",
+                    "Class 12: Matrices"),
+            new TopicSeed("Determinants", "12", 85.28, "Matrices",
+                    "Class 12: Determinants"),
+            new TopicSeed("Continuity and Differentiability", "12", 100.0, "Inverse Trigonometric Functions",
+                    "Class 12: Continuity and Differentiability"),
+            new TopicSeed("Applications of Derivatives", "12", 68.05, "Continuity and Differentiability",
+                    "Class 12: Application of Derivatives"),
+            new TopicSeed("Indefinite Integration", "12", 34.76, "Applications of Derivatives",
+                    "Class 12: Integrals"),
+            new TopicSeed("Definite Integration", "12", 63.53, "Indefinite Integration",
+                    "Class 12: Integrals"),
+            new TopicSeed("Applications of Integrals (Area)", "12", 41.75, "Definite Integration",
+                    "Class 12: Application of Integrals"),
+            new TopicSeed("Differential Equations", "12", 51.18, "Definite Integration",
+                    "Class 12: Differential Equations"),
+            new TopicSeed("Vector Algebra", "12", 47.42, "Determinants",
+                    "Class 12: Vector Algebra"),
+            new TopicSeed("Three Dimensional Geometry (Advanced)", "12", 75.24, "Vector Algebra",
+                    "Class 12: Three Dimensional Geometry"),
+            new TopicSeed("Linear Programming", "12", 20.0, "Three Dimensional Geometry (Advanced)",
+                    "Class 12: Linear Programming", true),
+            new TopicSeed("Probability (Advanced)", "12", 54.2, "Probability",
+                    "Class 12: Probability")
     );
 
     // NEET has no Python reference data — Physics/Chemistry are shared with

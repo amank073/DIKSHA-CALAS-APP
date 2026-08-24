@@ -811,45 +811,78 @@
 
   <div class="video-modal-backdrop" *ngIf="playingVideo" (click)="closeVideo()">
 
-    <div class="video-modal" (click)="$event.stopPropagation()">
+      <div class="video-modal" (click)="$event.stopPropagation()"
+        [class.has-playlist]="playingVideo.playlist && playingVideo.playlist.length > 1 && playingVideo.isPlaylistVisible">
 
-      <div class="video-modal-header">
-        <h3>{{ playingVideo.title }}</h3>
-        <button type="button" class="video-modal-close" (click)="closeVideo()">✕</button>
+        <div class="video-modal-header">
+          <h3>{{ playingVideo.title }}</h3>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button *ngIf="playingVideo.playlist && playingVideo.playlist.length > 1" type="button"
+              class="video-playlist-toggle" (click)="togglePlaylist()">
+              {{ playingVideo.isPlaylistVisible ? 'Hide Playlist' : 'Show Playlist' }}
+            </button>
+            <button type="button" class="video-modal-close" (click)="closeVideo()">✕</button>
+          </div>
+        </div>
+
+        <div class="video-modal-content-wrapper">
+          <div class="video-modal-body">
+
+            <iframe *ngIf="playingVideo.embedUrl && !playingVideo.isVideoTag" [src]="playingVideo.embedUrl"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+
+            <video *ngIf="playingVideo.embedUrl && playingVideo.isVideoTag" [src]="playingVideo.embedUrl" controls
+              autoplay style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px;"></video>
+
+            <div class="video-fallback" *ngIf="!playingVideo.embedUrl && !isSearchingVideo && !videoSearchError">
+              <p>This topic doesn't have a specific video yet — here's a search instead.</p>
+              <a [href]="playingVideo.originalUrl" target="_blank" rel="noopener noreferrer">
+                Open YouTube search in a new tab →
+              </a>
+            </div>
+
+            <div class="video-error" *ngIf="videoSearchError"
+              style="color: #dc3545; text-align: center; padding: 20px;">
+              <p>{{ videoSearchError }}</p>
+              <a [href]="playingVideo.originalUrl" target="_blank" rel="noopener noreferrer"
+                style="color: #007bff; text-decoration: underline;">
+                Open YouTube search in a new tab instead
+              </a>
+            </div>
+
+            <div class="video-loading" *ngIf="!playingVideo.embedUrl && isSearchingVideo"
+              style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 250px;">
+              <div class="spinner"></div>
+              <p style="margin-top: 15px; font-size: 1.1rem; color: #ddd;">Searching...</p>
+            </div>
+
+          </div>
+
+          <div class="video-playlist-sidebar"
+            *ngIf="playingVideo.playlist && playingVideo.playlist.length > 1 && playingVideo.isPlaylistVisible">
+            <div class="playlist-item" *ngFor="let vid of playingVideo.playlist; let i = index"
+              (click)="playFromPlaylist(vid)" [class.active]="playingVideo.originalUrl === vid.videoUrl">
+              <div class="playlist-item-idx">
+                <span *ngIf="playingVideo.originalUrl !== vid.videoUrl">{{ i + 1 }}</span>
+                <span *ngIf="playingVideo.originalUrl === vid.videoUrl">▶</span>
+              </div>
+              <div class="playlist-item-thumbnail">
+                <img *ngIf="vid.thumbnailUrl" [src]="vid.thumbnailUrl" alt="Thumbnail" />
+                <span class="video-duration" *ngIf="vid.durationSeconds">{{ formatDuration(vid.durationSeconds) }}</span>
+              </div>
+              <div class="playlist-item-details">
+                <div class="playlist-item-title">{{ vid.videoTitle }}</div>
+                <div class="playlist-item-channel">{{ vid.channelName }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <div class="video-modal-body">
-
-        <iframe *ngIf="playingVideo.embedUrl && !playingVideo.isVideoTag" [src]="playingVideo.embedUrl" frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen></iframe>
-
-        <video *ngIf="playingVideo.embedUrl && playingVideo.isVideoTag" [src]="playingVideo.embedUrl" controls autoplay
-          style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px;"></video>
-
-        <div class="video-fallback" *ngIf="!playingVideo.embedUrl && !isSearchingVideo && !videoSearchError">
-          <p>This topic doesn't have a specific video yet — here's a search instead.</p>
-          <a [href]="playingVideo.originalUrl" target="_blank" rel="noopener noreferrer">
-            Open YouTube search in a new tab →
-          </a>
-        </div>
-
-        <div class="video-error" *ngIf="videoSearchError" style="color: #dc3545; text-align: center; padding: 20px;">
-          <p>{{ videoSearchError }}</p>
-          <a [href]="playingVideo.originalUrl" target="_blank" rel="noopener noreferrer"
-            style="color: #007bff; text-decoration: underline;">
-            Open YouTube search in a new tab instead
-          </a>
-        </div>
-
-        <div class="video-loading" *ngIf="!playingVideo.embedUrl && isSearchingVideo">
-          <p>Searching for video using YouTube API...</p>
-          <div class="spinner"></div>
-        </div>
-
-      </div>
     </div>
-  </div>
 
   <!-- =========================================================
      STUDENT PROFILE MODAL

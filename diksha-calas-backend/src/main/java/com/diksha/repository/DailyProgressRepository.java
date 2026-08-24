@@ -2,6 +2,8 @@ package com.diksha.repository;
 
 import com.diksha.entity.DailyProgress;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,5 +20,7 @@ public interface DailyProgressRepository
             Long dailyScheduleId
     );
 
+    @Modifying
+    @Query("DELETE FROM DailyProgress d WHERE d.student.id = :studentId")
     void deleteByStudentId(Long studentId);
 }

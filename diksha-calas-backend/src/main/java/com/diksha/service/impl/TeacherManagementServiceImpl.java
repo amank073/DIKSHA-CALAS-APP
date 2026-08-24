@@ -30,6 +30,7 @@ public class TeacherManagementServiceImpl
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.diksha.repository.MessageRepository messageRepository;
     private final StudentProfileRepository profileRepository;
     private final TeacherProfileRepository teacherProfileRepository;
     private final TestRepository testRepository;
@@ -40,12 +41,14 @@ public class TeacherManagementServiceImpl
             PasswordEncoder passwordEncoder,
             StudentProfileRepository profileRepository,
             TeacherProfileRepository teacherProfileRepository,
-            TestRepository testRepository) {
+            TestRepository testRepository,
+            com.diksha.repository.MessageRepository messageRepository) {
 
         this.userRepository = userRepository;
         this.teacherProfileRepository = teacherProfileRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.messageRepository = messageRepository;
         this.profileRepository = profileRepository;
         this.testRepository = testRepository;
     }
@@ -390,6 +393,9 @@ public class TeacherManagementServiceImpl
 
         // 3. Delete TeacherProfile
         teacherProfileRepository.findByUserId(teacherId).ifPresent(teacherProfileRepository::delete);
+
+        // Delete messages to prevent constraint violation
+        messageRepository.deleteByUserId(teacherId);
 
         // 4. Delete the User
         userRepository.delete(teacher);

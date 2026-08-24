@@ -39,4 +39,9 @@ public class VideoController {
         ContentInput input = new ContentInput(null, topicName, subjectName, examType);
         return ResponseEntity.ok(contentRecommender.recommendList(input));
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<java.util.Map<String, Object>> searchVideos(@RequestParam String query) {
+        return ResponseEntity.ok(contentRecommender.searchRaw(query));
+    }
 }

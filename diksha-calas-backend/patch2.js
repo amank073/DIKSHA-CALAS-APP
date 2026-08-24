@@ -1,4 +1,14 @@
-package com.diksha.repository;
+const fs = require('fs');
+
+// Fix StudyPlanRepository
+let planContent = fs.readFileSync('src/main/java/com/diksha/repository/StudyPlanRepository.java', 'utf8');
+if (!planContent.includes('import org.springframework.data.jpa.repository.Modifying;')) {
+    planContent = planContent.replace('import org.springframework.data.jpa.repository.JpaRepository;', 'import org.springframework.data.jpa.repository.JpaRepository;\nimport org.springframework.data.jpa.repository.Modifying;\nimport org.springframework.data.jpa.repository.Query;');
+}
+fs.writeFileSync('src/main/java/com/diksha/repository/StudyPlanRepository.java', planContent);
+
+// Fix MessageRepository
+let msgContent = `package com.diksha.repository;
 
 import com.diksha.entity.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,3 +45,5 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("DELETE FROM Message m WHERE m.sender.id = :userId OR m.receiver.id = :userId")
     void deleteByUserId(@Param("userId") Long userId);
 }
+`;
+fs.writeFileSync('src/main/java/com/diksha/repository/MessageRepository.java', msgContent);

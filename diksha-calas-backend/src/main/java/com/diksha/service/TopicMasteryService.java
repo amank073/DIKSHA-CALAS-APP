@@ -49,7 +49,7 @@ public class TopicMasteryService {
 
             if (progress.getCompletionStatus() == CompletionStatus.COMPLETED) {
                 completion = Math.max(completion, 1.0);
-            } else if (progress.getCompletionStatus() == CompletionStatus.PARTIALLY_COMPLETED) {
+            } else if (progress.getCompletionStatus() == CompletionStatus.INCOMPLETE) {
                 completion = Math.max(completion, 0.5);
             } else if (progress.getCompletionStatus() == CompletionStatus.SKIPPED) {
                 completion = 0.0;
@@ -63,7 +63,7 @@ public class TopicMasteryService {
             double recencyWeight = Math.max(0.65, 1.0 - Math.min(ageDays, 90) / 300.0);
             double observationWeight = switch (progress.getCompletionStatus()) {
                 case COMPLETED -> 1.15;
-                case PARTIALLY_COMPLETED -> 1.0;
+                case INCOMPLETE -> 1.0;
                 case PENDING -> 0.85;
                 case SKIPPED -> 1.10;
             };

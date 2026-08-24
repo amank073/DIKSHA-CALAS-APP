@@ -209,7 +209,7 @@ public class StudentProgressServiceImpl
 
                 throw new RuntimeException(
                         "Invalid status. Use PENDING, " +
-                                "PARTIALLY_COMPLETED or COMPLETED"
+                                "INCOMPLETE or COMPLETED"
                 );
             }
         }
@@ -332,13 +332,13 @@ public class StudentProgressServiceImpl
                         )
                         .count();
 
-        int partiallyCompletedSchedules =
+        int incompleteSchedules =
                 (int) progressBySchedule.values()
                         .stream()
                         .filter(progress ->
                                 progress.getCompletionStatus()
                                         == CompletionStatus
-                                        .PARTIALLY_COMPLETED
+                                        .INCOMPLETE
                         )
                         .count();
 
@@ -354,7 +354,7 @@ public class StudentProgressServiceImpl
                 totalPlannedHours,
                 studiedHours,
                 completedSchedules,
-                partiallyCompletedSchedules,
+                incompleteSchedules,
                 completionPercentage
         );
     }

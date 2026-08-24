@@ -453,9 +453,34 @@ export class StudentDashboardComponent implements OnInit {
         scheduleId: item.id,
         startTimeMs: new Date().getTime(),
         isVideoTag: false,
-        isPlaylistVisible: false
+        playlist: [],
+        isPlaylistVisible: true
       };
       document.body.style.overflow = 'hidden';
+      
+      // Fetch playlist in background
+      const params = new HttpParams()
+        .set('topicName', item.topic?.topicName || item.topicName || item.videoTitle || '')
+        .set('subjectName', item.subjectName || '')
+        .set('examType', this.plan?.variant || '');
+      
+      this.http.get<any[]>(`${this.apiUrl}/api/student/videos/recommend`, { headers: this.authHeaders(), params })
+        .subscribe({
+            next: (videos) => {
+              if (videos && videos.length > 0) {
+                 // Insert the main hardcoded video at the top of the playlist so it's selectable
+                 const mainVidInPlaylist = {
+                    videoUrl: item.videoUrl,
+                    videoTitle: item.videoTitle || 'Main Video',
+                    channelName: 'Teacher Assigned',
+                    thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+                 };
+                 this.playingVideo = { ...(this.playingVideo as any), playlist: [mainVidInPlaylist, ...videos] };
+              }
+              this.cdr.markForCheck();
+            },
+            error: (err) => { console.error("Error fetching playlist:", err); }
+        });
       return;
     }
 
@@ -560,7 +585,7 @@ export class StudentDashboardComponent implements OnInit {
         const payload = {
           scheduleId: this.playingVideo.scheduleId,
           studiedHours: watchTimeHours,
-          status: 'COMPLETED',
+          status: 'INCOMPLETE',
           remarks: 'Watched video on platform'
         };
 
@@ -622,5 +647,16 @@ export class StudentDashboardComponent implements OnInit {
 
   goToNextMonth(): void {
     if (this.currentMonthOffset < this.availableMonths.length - 1) this.currentMonthOffset++;
+  }
+
+  formatDuration(seconds: number): string {
+    if (!seconds) return '';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) {
+      return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
   }
 }

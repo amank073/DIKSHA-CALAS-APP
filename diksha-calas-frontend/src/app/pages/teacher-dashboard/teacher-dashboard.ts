@@ -2,10 +2,10 @@ import { API_ORIGIN, API_BASE_URL } from '../../core/config/api-config';
 import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { DomSanitizer } from '@angular/platform-browser';
-import { environment } from '../../../environments/environment';
+
 import { PhaseTimelineComponent } from '../../shared/components/phase-timeline/phase-timeline';
 import { ChatWidgetComponent } from '../../shared/components/chat-widget/chat-widget.component';
 
@@ -65,6 +65,8 @@ export class TeacherDashboardComponent implements OnInit {
     scheduleId?: number;
     startTimeMs?: number;
     isVideoTag?: boolean;
+    playlist?: any[];
+    isPlaylistVisible?: boolean;
   } | null = null;
   isSearchingVideo = false;
   videoSearchError = '';
@@ -157,8 +159,41 @@ export class TeacherDashboardComponent implements OnInit {
         originalUrl: item.videoUrl,
         scheduleId: item.id,
         startTimeMs: new Date().getTime(),
-        isVideoTag: false
+        isVideoTag: false,
+        playlist: [],
+        isPlaylistVisible: true
       };
+      document.body.style.overflow = 'hidden';
+      
+      // Fetch playlist in background
+      let examTypeStr = '';
+      if (this.plan && this.plan.variant) {
+          examTypeStr = this.plan.variant;
+      } else if (this.selectedStudentDetails && this.selectedStudentDetails.targetExam) {
+          examTypeStr = this.selectedStudentDetails.targetExam;
+      }
+      const params = new HttpParams()
+        .set('topicName', item.topic?.topicName || item.topicName || item.videoTitle || '')
+        .set('subjectName', item.subjectName || '')
+        .set('examType', examTypeStr);
+      
+      this.http.get<any[]>(`${this.apiUrl}/api/student/videos/recommend`, { headers: this.headers, params })
+        .subscribe({
+            next: (videos) => {
+              if (videos && videos.length > 0) {
+                 // Insert the main hardcoded video at the top of the playlist so it's selectable
+                 const mainVidInPlaylist = {
+                    videoUrl: item.videoUrl,
+                    videoTitle: item.videoTitle || 'Main Video',
+                    channelName: 'Teacher Assigned',
+                    thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+                 };
+                 this.playingVideo = { ...(this.playingVideo as any), playlist: [mainVidInPlaylist, ...videos] };
+              }
+              this.cdr.markForCheck();
+            },
+            error: (err) => { console.error("Error fetching playlist:", err); }
+        });
       return;
     } 
     
@@ -173,16 +208,17 @@ export class TeacherDashboardComponent implements OnInit {
         originalUrl: item.videoUrl,
         scheduleId: item.id,
         startTimeMs: new Date().getTime(),
-        isVideoTag: !!isVideo
+        isVideoTag: !!isVideo,
+        isPlaylistVisible: false
       };
+      document.body.style.overflow = 'hidden';
       return;
     }
 
-    // YOUTUBE SEARCH API (finds top video and plays it)
+    // YOUTUBE SEARCH via BACKEND API (finds top 5 videos and plays the 1st)
     this.isSearchingVideo = true;
     this.videoSearchError = '';
-    const query = encodeURIComponent(item.videoTitle || 'Educational Video');
-    const fallbackOriginalUrl = `https://www.youtube.com/results?search_query=${query}`;
+    const fallbackOriginalUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(item.videoTitle || 'Educational Video')}`;
     
     this.playingVideo = {
       title: item.videoTitle || 'Video',
@@ -190,20 +226,45 @@ export class TeacherDashboardComponent implements OnInit {
       originalUrl: fallbackOriginalUrl,
       scheduleId: item.id,
       startTimeMs: new Date().getTime(),
-      isVideoTag: false
+      isVideoTag: false,
+      isPlaylistVisible: false
     };
-    
-    this.http.get<any>(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${query}&type=video&key=${environment.YOUTUBE_API_KEY}`)
+    document.body.style.overflow = 'hidden';
+
+    // Check if the plan is available to extract variant
+    let examTypeStr = '';
+    if (this.plan && this.plan.variant) {
+        examTypeStr = this.plan.variant;
+    } else if (this.selectedStudentDetails && this.selectedStudentDetails.targetExam) {
+        examTypeStr = this.selectedStudentDetails.targetExam;
+    }
+
+    const params = new HttpParams()
+      .set('topicName', item.topic?.topicName || item.topicName || item.videoTitle || '')
+      .set('subjectName', item.subjectName || '')
+      .set('examType', examTypeStr);
+
+    this.http.get<any[]>(`${this.apiUrl}/api/student/videos/recommend`, { headers: this.headers, params })
       .subscribe({
-          next: (response) => {
-            if (response.items && response.items.length > 0) {
-              const foundVideoId = response.items[0].id.videoId;
-              const embedUrl = `https://www.youtube-nocookie.com/embed/${foundVideoId}?autoplay=1&rel=0`;
-              if (this.playingVideo) {
-                 this.playingVideo.embedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+          next: (videos) => {
+            if (videos && videos.length > 0) {
+              const mainVideo = videos[0];
+              const fetchedId = this.extractYouTubeVideoId(mainVideo.videoUrl);
+              if (fetchedId) {
+                const embedUrl = `https://www.youtube-nocookie.com/embed/${fetchedId}?autoplay=1&rel=0`;
+                this.playingVideo = {
+                  title: mainVideo.videoTitle,
+                  embedUrl: this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl),
+                  originalUrl: mainVideo.videoUrl,
+                  scheduleId: item.id,
+                  startTimeMs: new Date().getTime(),
+                  isVideoTag: false,
+                  playlist: videos,
+                  isPlaylistVisible: true
+                };
               }
             } else {
-              this.videoSearchError = 'No exact video found for this topic. Try clicking the link below to search manually.';
+              this.videoSearchError = 'No videos found for this topic.';
             }
             this.isSearchingVideo = false;
             this.cdr.markForCheck();
@@ -217,9 +278,41 @@ export class TeacherDashboardComponent implements OnInit {
       });
   }
 
+  
+  togglePlaylist(): void {
+    if (this.playingVideo) {
+      this.playingVideo.isPlaylistVisible = !this.playingVideo.isPlaylistVisible;
+    }
+  }
+
+  playFromPlaylist(video: any): void {
+    if (this.playingVideo) {
+      const fetchedId = this.extractYouTubeVideoId(video.videoUrl);
+      if (fetchedId) {
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${fetchedId}?autoplay=1&rel=0`;
+        this.playingVideo.title = video.videoTitle;
+        this.playingVideo.embedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
+        this.playingVideo.originalUrl = video.videoUrl;
+      }
+    }
+  }
+
+  formatDuration(seconds: number): string {
+    if (!seconds) return '';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    
+    if (h > 0) {
+      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
   closeVideo(): void {
     // Teachers do not log watch time to the progress API
     this.playingVideo = null;
+    document.body.style.overflow = '';
   }
 
   get headers() {

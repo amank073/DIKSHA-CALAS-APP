@@ -7,7 +7,7 @@ public class StudyPlanProgressSummaryResponse {
     private double totalPlannedHours;
     private double studiedHours;
     private int completedSchedules;
-    private int partiallyCompletedSchedules;
+    private int incompleteSchedules;
     private double completionPercentage;
 
     public StudyPlanProgressSummaryResponse(
@@ -16,7 +16,7 @@ public class StudyPlanProgressSummaryResponse {
             double totalPlannedHours,
             double studiedHours,
             int completedSchedules,
-            int partiallyCompletedSchedules,
+            int incompleteSchedules,
             double completionPercentage) {
 
         this.planId = planId;
@@ -24,7 +24,7 @@ public class StudyPlanProgressSummaryResponse {
         this.totalPlannedHours = totalPlannedHours;
         this.studiedHours = studiedHours;
         this.completedSchedules = completedSchedules;
-        this.partiallyCompletedSchedules = partiallyCompletedSchedules;
+        this.incompleteSchedules = incompleteSchedules;
         this.completionPercentage = completionPercentage;
     }
 
@@ -49,7 +49,7 @@ public class StudyPlanProgressSummaryResponse {
     }
 
     public int getPartiallyCompletedSchedules() {
-        return partiallyCompletedSchedules;
+        return incompleteSchedules;
     }
 
     public double getCompletionPercentage() {

@@ -63,9 +63,13 @@ public class MessageServiceImpl implements MessageService {
                 .filter(u -> !u.getId().equals(user.getId()))
                 .map(u -> {
                     Long unreadCount = messageRepository.countUnreadMessages(user.getId(), u.getId());
-                    java.time.LocalDateTime lastMessageTime = messageRepository.findLastMessageTime(user.getId(), u.getId());
+                    Message lastMsg = messageRepository.findLastVisibleMessage(user.getId(), u.getId());
                     ContactDto dto = new ContactDto(u.getId(), u.getFirstName() + " " + u.getLastName(), u.getRole().getName().name(), u.getEmail(), unreadCount != null ? unreadCount.intValue() : 0);
-                    dto.setLastMessageTime(lastMessageTime);
+                    if (lastMsg != null) {
+                        dto.setLastMessageTime(lastMsg.getTimestamp());
+                        dto.setLastMessageText(lastMsg.getContent());
+                        dto.setLastMessageFromMe(lastMsg.getSender().getId().equals(user.getId()));
+                    }
                     return dto;
                 })
                 .sorted((c1, c2) -> {

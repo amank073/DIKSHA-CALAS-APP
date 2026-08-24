@@ -7,6 +7,8 @@ public class ContactDto {
     private String email;
     private int unreadCount;
     private java.time.LocalDateTime lastMessageTime;
+    private String lastMessageText;
+    private boolean isLastMessageFromMe;
 
     public ContactDto() {}
 
@@ -64,5 +66,21 @@ public class ContactDto {
 
     public void setLastMessageTime(java.time.LocalDateTime lastMessageTime) {
         this.lastMessageTime = lastMessageTime;
+    }
+
+    public String getLastMessageText() {
+        return lastMessageText;
+    }
+
+    public void setLastMessageText(String lastMessageText) {
+        this.lastMessageText = lastMessageText;
+    }
+
+    public boolean isLastMessageFromMe() {
+        return isLastMessageFromMe;
+    }
+
+    public void setLastMessageFromMe(boolean isLastMessageFromMe) {
+        this.isLastMessageFromMe = isLastMessageFromMe;
     }
 }

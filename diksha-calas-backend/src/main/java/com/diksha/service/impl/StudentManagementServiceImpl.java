@@ -31,6 +31,7 @@ public class StudentManagementServiceImpl
 
     private final MilestoneRepository milestoneRepository;
     private final DeletedUserRepository deletedUserRepository;
+    private final MessageRepository messageRepository;
     private final StudentProgressRepository studentProgressRepository;
     private final StudyPlanRepository studyPlanRepository;
 
@@ -45,7 +46,8 @@ public class StudentManagementServiceImpl
             MilestoneRepository milestoneRepository,
             StudentProgressRepository studentProgressRepository,
             StudyPlanRepository studyPlanRepository,
-            DeletedUserRepository deletedUserRepository) {
+            DeletedUserRepository deletedUserRepository,
+            MessageRepository messageRepository) {
 
         this.profileRepository = profileRepository;
         this.userRepository = userRepository;
@@ -58,6 +60,7 @@ public class StudentManagementServiceImpl
         this.studentProgressRepository = studentProgressRepository;
         this.studyPlanRepository = studyPlanRepository;
         this.deletedUserRepository = deletedUserRepository;
+        this.messageRepository = messageRepository;
     }
 
     // =========================================================
@@ -325,16 +328,9 @@ public class StudentManagementServiceImpl
         // 5. Delete Study Plans and their Daily Schedules
         // -----------------------------------------------------
 
-        studyPlanRepository
-                .findByStudentIdOrderByCreatedAtDesc(studentId)
-                .forEach(studyPlan -> {
-
-                    dailyScheduleRepository
-                            .deleteByStudyPlanId(
-                                    studyPlan.getId());
-
-                    studyPlanRepository.delete(studyPlan);
-                });
+        dailyScheduleRepository.deleteByStudentId(studentId);
+        studyPlanRepository.deleteByStudentId(studentId);
+        messageRepository.deleteByUserId(studentId);
 
         // -----------------------------------------------------
         // 6. Delete Student Profile

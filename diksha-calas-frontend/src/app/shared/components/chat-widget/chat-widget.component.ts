@@ -148,11 +148,23 @@ export class ChatWidgetComponent implements OnInit, OnDestroy, AfterViewChecked 
     const contactId = this.selectedContact.id;
     this.messages = [];
     this.showClearConfirm = false;
-    this.chatService.clearChat(contactId).subscribe();
+    this.cdr.detectChanges();
+    
+    // Instantly clear for UI responsiveness
+    if (this.selectedContact) {
+      this.selectedContact.lastMessageText = undefined;
+      this.selectedContact.isLastMessageFromMe = undefined;
+      this.selectedContact.lastMessageTime = undefined;
+    }
+    
+    this.chatService.clearChat(contactId).subscribe(() => {
+      this.loadContacts();
+    });
   }
 
   cancelClearChat(): void {
     this.showClearConfirm = false;
+    this.cdr.detectChanges();
   }
 
   toggleMenu(event: Event, contactId: number): void {
@@ -183,8 +195,15 @@ export class ChatWidgetComponent implements OnInit, OnDestroy, AfterViewChecked 
       this.messages = [];
     }
     
+    // Instantly update the contact in the list for UI responsiveness
+    contact.lastMessageText = undefined;
+    contact.isLastMessageFromMe = undefined;
+    contact.lastMessageTime = undefined;
+    this.cdr.detectChanges();
+    
     this.chatService.clearChat(contact.id).subscribe(() => {
       // Chat cleared in backend
+      this.loadContacts();
     });
   }
 

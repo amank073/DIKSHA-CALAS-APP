@@ -10,6 +10,8 @@ export interface Contact {
   email: string;
   unreadCount?: number;
   lastMessageTime?: string;
+  lastMessageText?: string;
+  isLastMessageFromMe?: boolean;
 }
 
 export interface Message {

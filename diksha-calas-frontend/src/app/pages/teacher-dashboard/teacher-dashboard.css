@@ -1073,14 +1073,17 @@ main {
   box-shadow: 0 4px 6px rgba(0,0,0,0.15);
 }
 
+
 /* =========================================================
-   VIDEO MODAL (In-Platform Player)
+   VIDEO MODAL — plays inline, never navigates to youtube.com
 ========================================================= */
 
 .video-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1095,6 +1098,11 @@ main {
   max-width: 860px;
   overflow: hidden;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+  transition: max-width 0.3s ease;
+}
+
+.video-modal.has-playlist {
+  max-width: 1100px;
 }
 
 .video-modal-header {
@@ -1129,9 +1137,34 @@ main {
   background: rgba(255, 255, 255, 0.2);
 }
 
+.video-playlist-toggle {
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.video-playlist-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.video-modal-content-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.video-modal.has-playlist .video-modal-content-wrapper {
+  flex-direction: row;
+}
+
 .video-modal-body {
   position: relative;
-  width: 100%;
+  flex: 1;
   aspect-ratio: 16 / 9;
   background: #000;
 }
@@ -1141,6 +1174,99 @@ main {
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.video-playlist-sidebar {
+  width: 340px;
+  background: #0f0f0f;
+  border-left: 1px solid #272727;
+  padding: 24px 0 0 0;
+  overflow-y: auto;
+  max-height: calc(1100px * 9 / 16);
+}
+
+.playlist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 2px;
+}
+
+.playlist-item:hover {
+  background: #272727;
+}
+
+.playlist-item.active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.playlist-item-idx {
+  color: #aaa;
+  font-size: 12px;
+  min-width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 68px;
+  /* Match thumbnail height for vertical centering */
+}
+
+.playlist-item-thumbnail {
+  flex-shrink: 0;
+  width: 120px;
+  height: 68px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #222;
+  position: relative;
+}
+
+.video-duration {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 4px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.playlist-item-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playlist-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.playlist-item-title {
+  color: #f1f1f1;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-item-channel {
+  color: #aaa;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 .video-fallback {
@@ -1171,11 +1297,12 @@ main {
 }
 
 /* =========================================================
-   MONTH VIEW (FULL MICRO PLAN)
+   FULL STUDY PLAN — phase timeline / weekly tracks / month list
 ========================================================= */
 
 .full-plan-block {
   margin-bottom: 16px;
+  padding: 20px;
 }
 
 .full-plan-block-title {
@@ -1189,6 +1316,10 @@ main {
   margin: 0 0 14px;
   font-size: 12.5px;
   color: #687386;
+}
+
+.full-plan-block .phase-timeline {
+  margin-top: 12px;
 }
 
 .month-nav {
@@ -1225,7 +1356,7 @@ main {
 
 .month-day-list {
   flex: 1;
-  max-height: 300px;
+  max-height: 460px;
   overflow-y: auto;
   overflow-x: auto;
   border: 1px solid rgba(226, 232, 240, 0.8);
@@ -1269,73 +1400,310 @@ main {
   background-color: #f8fafc;
 }
 
+.month-day-study {
+  color: #475569;
+}
+
 .month-day-date {
+  color: #687386;
   font-weight: 600;
-  color: #30394a;
 }
 
 .month-day-subject {
+  color: #687386;
+  font-size: 13.5px;
   font-weight: 600;
-  color: #30394a;
 }
 
 .month-day-test {
-  color: #e11d48;
+  color: #92400e;
+  font-size: 13.5px;
   font-weight: 600;
 }
 
 .month-day-test em {
-  font-size: 11px;
-  color: #ef4444;
   font-style: normal;
-  margin-left: 6px;
-}
-
-.month-day-study {
-  color: #64748b;
+  opacity: 0.8;
 }
 
 .month-day-hours {
-  font-weight: 600;
-  color: #334155;
+  margin-left: auto;
+  font-weight: 700;
+  color: #172033;
+  font-size: 13px;
 }
 
-/* =========================================================
-   DEACTIVATED UI
-========================================================= */
-.deactivated-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: #f1f5f9;
-}
-
-.deactivated-card {
-  background: white;
-  padding: 50px 40px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+.video-loading {
   text-align: center;
-  max-width: 400px;
-  width: 100%;
+  padding: 40px;
+  color: white;
 }
 
-.deactivated-icon {
-  color: #ef4444;
-  margin-bottom: 20px;
+.video-loading .spinner {
+  margin: 20px auto;
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
 }
 
-.deactivated-card h2 {
-  font-size: 24px;
-  color: #1e293b;
-  margin-bottom: 10px;
-  margin-top: 0;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.deactivated-card p {
-  color: #64748b;
-  font-size: 16px;
-  margin: 0;
-  line-height: 1.5;
-}
+  /* =========================================================
+   MONTH VIEW (FULL MICRO PLAN)
+========================================================= */
+
+  .full-plan-block {
+    margin-bottom: 16px;
+  }
+
+  .full-plan-block-title {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #172033;
+  }
+
+  .full-plan-block-subtitle {
+    margin: 0 0 14px;
+    font-size: 12.5px;
+    color: #687386;
+  }
+
+  .month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .month-nav button {
+    border: 1px solid #d7dce5;
+    background: white;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #30394a;
+    cursor: pointer;
+  }
+
+  .month-nav button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .month-nav .full-plan-block-title {
+    margin: 0;
+  }
+
+  .empty-note {
+    color: #687386;
+    font-size: 13px;
+  }
+
+  .month-day-list {
+    flex: 1;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 12px;
+    background: #ffffff;
+  }
+
+  .month-day-list table.schedule-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13.5px;
+  }
+
+  .month-day-list th {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  .month-day-list td {
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+    vertical-align: middle;
+  }
+
+  .month-day-list tr:last-child td {
+    border-bottom: none;
+  }
+
+  .month-day-list tr:hover {
+    background-color: #f8fafc;
+  }
+
+  .month-day-date {
+    font-weight: 600;
+    color: #30394a;
+  }
+
+  .month-day-subject {
+    font-weight: 600;
+    color: #30394a;
+  }
+
+  .month-day-test {
+    color: #e11d48;
+    font-weight: 600;
+  }
+
+  .month-day-test em {
+    font-size: 11px;
+    color: #ef4444;
+    font-style: normal;
+    margin-left: 6px;
+  }
+
+  .month-day-study {
+    color: #64748b;
+  }
+
+  .month-day-hours {
+    font-weight: 600;
+    color: #334155;
+  }
+
+  /* =========================================================
+   WEEKLY SCHEDULE SECTION (Namespaced to prevent conflicts)
+========================================================= */
+
+  .schedule-section {
+    max-width: 1250px;
+    margin: 30px auto 50px;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 28px;
+    border: 1px solid rgba(226, 232, 240, 0.6);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), 0 1px 4px rgba(0, 0, 0, 0.02);
+  }
+
+  .schedule-section .section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .schedule-section .section-title h2 {
+    margin: 0;
+    color: #172033;
+    font-size: 22px;
+  }
+
+  .schedule-section .section-title p {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 13px;
+  }
+
+  .schedule-section .count {
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .schedule-section .schedule-scroll-container {
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 12px;
+  }
+
+  .schedule-section .schedule-item {
+    padding: 24px 0;
+    border-bottom: 1px solid #e2e8f0;
+    display: grid;
+    grid-template-columns: 120px minmax(250px, 1fr) 70px 145px 75px;
+    gap: 20px;
+    align-items: center;
+    transition: transform 0.25s ease;
+    background: transparent;
+    border-radius: 0;
+    margin-bottom: 0;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+
+  .schedule-section .schedule-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .schedule-section .schedule-item:first-child {
+    padding-top: 10px;
+  }
+
+  .schedule-section .schedule-item:hover {
+    transform: translateX(4px);
+  }
+
+  .schedule-section .date-box {
+    padding-right: 15px;
+    border-right: 1px solid #e5e7eb;
+  }
+
+  .schedule-section .date-box strong {
+    display: block;
+    color: #1e293b;
+    font-size: 14px;
+  }
+
+  .schedule-section .date-box small {
+    display: block;
+    margin-top: 5px;
+    color: #64748b;
+    font-size: 12px;
+  }
+
+  .schedule-section .subject {
+    margin-bottom: 5px;
+    color: #4f46e5;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+  }
+
+  .schedule-section .schedule-content h3 {
+    margin: 0 0 7px;
+    color: #172033;
+    font-size: 17px;
+  }
+
+  .schedule-section .schedule-content p {
+    margin: 5px 0;
+    color: #64748b;
+    font-size: 13px;
+  }
+
+  .schedule-section .hours {
+    color: #172033;
+    font-size: 18px;
+    font-weight: 800;
+    white-space: nowrap;
+  }

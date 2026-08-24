@@ -1209,6 +1209,20 @@ section {
   border-radius: 8px;
   overflow: hidden;
   background: #222;
+  position: relative;
+}
+
+.video-duration {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 4px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
 }
 
 .playlist-item-thumbnail img {

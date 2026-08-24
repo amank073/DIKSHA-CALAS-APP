@@ -160,7 +160,8 @@ public final class Contracts {
             String videoTitle,
             String videoUrl,
             String thumbnailUrl,
-            String channelName
+            String channelName,
+            long durationSeconds
     ) {
     }
 
