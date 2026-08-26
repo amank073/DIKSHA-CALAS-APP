@@ -271,18 +271,16 @@ public class PlanGeneratorService {
 
         String videoTitle;
         String videoUrl;
-        ContentOutput recommended = contentRecommender.recommend(
-                new ContentInput(topic.getId(), topic.getTopicName(), item.subjectName(), examType.name())
-        );
-        if (contentRecommender.isConfigured()) {
-            // Prefer a real, API-resolved video when a YouTube key is configured.
-            videoTitle = recommended.videoTitle();
-            videoUrl = recommended.videoUrl();
-        } else if (curated != null) {
+        
+        if (curated != null) {
             // Development/offline fallback: use teacher/admin-curated content.
             videoTitle = curated.getTitle();
             videoUrl = curated.getResourceUrl();
         } else {
+            // Use placeholder search URL to trigger on-demand fetch later in frontend
+            ContentOutput recommended = contentRecommender.placeholder(
+                new ContentInput(topic.getId(), topic.getTopicName(), item.subjectName(), examType.name())
+            );
             videoTitle = recommended.videoTitle();
             videoUrl = recommended.videoUrl();
         }

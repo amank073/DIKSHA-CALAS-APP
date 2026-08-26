@@ -356,7 +356,7 @@ public class ContentRecommender {
         return s.replace("&quot;", "\"").replace("&#39;", "'").replace("&amp;", "&");
     }
 
-    private ContentOutput placeholder(ContentInput input) {
+    public ContentOutput placeholder(ContentInput input) {
         String query = buildQuery(input);
         String searchUrl = "https://www.youtube.com/results?search_query="
                 + URLEncoder.encode(query, StandardCharsets.UTF_8);
