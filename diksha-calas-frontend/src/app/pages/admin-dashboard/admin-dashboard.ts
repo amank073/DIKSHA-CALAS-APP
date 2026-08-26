@@ -1,4 +1,4 @@
-import { API_ORIGIN, API_BASE_URL } from '../../core/config/api-config';
+import { API_BASE_URL } from '../../core/config/api-config';
 import {
   Component,
   inject,
@@ -71,7 +71,7 @@ export class AdminDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
 
-      error: (error) => {
+      error: () => {
 
         this.students = [];
         this.loadingStudents = false;
@@ -111,7 +111,7 @@ export class AdminDashboardComponent implements OnInit {
 
       },
 
-      error: (error) => {
+      error: () => {
 
         this.teachers = [];
         this.loadingTeachers = false;

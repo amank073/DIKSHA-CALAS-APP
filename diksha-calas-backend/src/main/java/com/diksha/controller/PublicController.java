@@ -2,7 +2,6 @@ package com.diksha.controller;
 
 import com.diksha.dto.PublicTeacherResponse;
 import com.diksha.entity.TeacherProfile;
-import com.diksha.entity.User;
 import com.diksha.enums.RoleType;
 import com.diksha.repository.TeacherProfileRepository;
 import com.diksha.repository.UserRepository;

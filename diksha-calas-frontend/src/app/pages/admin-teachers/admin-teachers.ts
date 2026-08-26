@@ -1,4 +1,4 @@
-import { API_ORIGIN, API_BASE_URL } from '../../core/config/api-config';
+import { API_ORIGIN } from '../../core/config/api-config';
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -296,7 +296,7 @@ export class AdminTeachersComponent implements OnInit {
             this.cdr.detectChanges();
           }, 3000);
         },
-        error: (err) => {
+        error: () => {
           this.errorMessage = 'Unable to delete teacher.';
         }
       });

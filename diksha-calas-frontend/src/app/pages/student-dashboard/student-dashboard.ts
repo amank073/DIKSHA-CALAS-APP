@@ -1,9 +1,9 @@
-import { API_ORIGIN, API_BASE_URL } from '../../core/config/api-config';
-import { ChangeDetectorRef, Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { API_ORIGIN } from '../../core/config/api-config';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { environment } from '../../../environments/environment';
+import { DomSanitizer } from '@angular/platform-browser';
+
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';

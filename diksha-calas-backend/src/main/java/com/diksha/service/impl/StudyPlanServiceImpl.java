@@ -23,17 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import com.diksha.entity.StudentProfile;
-import com.diksha.entity.TeacherProfile;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.diksha.service.engine.Contracts.*;
 
